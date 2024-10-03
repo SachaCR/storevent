@@ -1,0 +1,30 @@
+{
+  "name": "remake",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --passWithNoTests",
+    "lint": "eslint . --ext .ts",
+    "fix": "prettier src --write && eslint . --ext .ts --fix"
+  },
+  "author": "SachaCR",
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.6",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "jest-html-reporters": "^3.1.7",
+    "prettier": "^3.2.4",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": "20.11.1",
+    "npm": "^10.2.4"
+  }
+}

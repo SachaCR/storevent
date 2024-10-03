@@ -1,0 +1,20 @@
+# IDEs
+.vscode
+.idea
+.DS_Store
+# Data & Logs
+*.log*
+
+# Dependency directories
+node_modules/
+.npmrc
+
+# Build artefacts
+build
+builds
+coverage
+test-reports
+dist
+docs/pages
+scripts/
+.structurizr
