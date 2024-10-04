@@ -1,15 +1,21 @@
 export interface DomainEvent {
   name: string;
   payload: unknown;
-  entityId: string;
+}
+
+export interface AppendEventOptions {
+  /**
+   * This options will make the append to fail if the sequence is not the expected one.
+   * This indicates that another process added another event in parallel.
+   */
+  checkConcurencyOnSequence?: number;
 }
 
 export interface EventStore<Event extends DomainEvent> {
   append(
+    entityId: string,
     event: Event[],
-    options?: {
-      appendAfterSequence?: number;
-    },
+    options?: AppendEventOptions,
   ): Promise<void>;
 
   getEventsFromSequence(params: {
@@ -30,5 +36,8 @@ export interface EventStore<Event extends DomainEvent> {
 
 export interface EntityReducer<State, Event extends DomainEvent> {
   entityName: string;
-  reduce: (state: State, events: Event[]) => State;
+  reduce: (
+    events: Event[],
+    state?: State,
+  ) => { state: State; sequence: number };
 }

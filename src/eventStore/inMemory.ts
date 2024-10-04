@@ -1,16 +1,33 @@
-import { DomainEvent, EventStore } from ".";
+import { AppendEventOptions, DomainEvent, EventStore } from ".";
 
 export class InMemoryEventStore<Event extends DomainEvent>
   implements EventStore<Event>
 {
-  #eventList: Event[];
+  #eventMap: Map<string, Event[]>;
 
   constructor() {
-    this.#eventList = [];
+    this.#eventMap = new Map<string, Event[]>();
   }
 
-  append(events: Event[]): Promise<void> {
-    this.#eventList.push(...events);
+  append(
+    entityId: string,
+    events: Event[],
+    options?: AppendEventOptions,
+  ): Promise<void> {
+    const entityEvents = this.#eventMap.get(entityId) || [];
+
+    if (options?.checkConcurencyOnSequence !== undefined) {
+      const lastEntitySequence = entityEvents.length - 1;
+
+      if (options.checkConcurencyOnSequence !== lastEntitySequence) {
+        return Promise.reject(new Error("Concurrency error"));
+      }
+    }
+
+    entityEvents.push(...events);
+
+    this.#eventMap.set(entityId, entityEvents);
+
     return Promise.resolve();
   }
 
@@ -19,11 +36,10 @@ export class InMemoryEventStore<Event extends DomainEvent>
     sequence?: number;
   }): Promise<{ events: Event[]; lastSequence: number }> {
     const { entityId, sequence } = params;
-    const allAccountEvents = this.#eventList.filter((event: Event) => {
-      return event.entityId === entityId;
-    });
 
-    const eventsFromSequence = allAccountEvents.slice(sequence);
+    const entityEvents = this.#eventMap.get(entityId) || [];
+
+    const eventsFromSequence = entityEvents.slice(sequence ?? 0);
 
     return Promise.resolve({
       events: eventsFromSequence,

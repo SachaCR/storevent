@@ -5,6 +5,7 @@ import { applyAccountCreatedEvent } from "./accountCreated";
 import { EntityReducer } from "../../eventStore";
 import { AccountEvent, AccountState } from "../types";
 import { switchCaseGuard } from "../../switchCaseGuard";
+import { Account } from "..";
 
 export class AccountReducer
   implements EntityReducer<AccountState, AccountEvent>
@@ -19,8 +20,11 @@ export class AccountReducer
     this.#entityName = "Account";
   }
 
-  reduce(initialState: AccountState, events: AccountEvent[]): AccountState {
-    const currentState = events.reduce(
+  reduce(
+    events: AccountEvent[],
+    state?: AccountState,
+  ): { state: AccountState; sequence: number } {
+    const newState = events.reduce(
       (state: AccountState, event: AccountEvent) => {
         const eventName = event.name;
 
@@ -38,13 +42,13 @@ export class AccountReducer
             switchCaseGuard(eventName);
         }
       },
-      initialState,
+      state ?? Account.initialState(),
     );
 
-    if (currentState.accountId === "VOID") {
+    if (newState.accountId === "VOID") {
       throw new Error("Account state corrupted");
     }
 
-    return currentState;
+    return { state: newState, sequence: events.length - 1 };
   }
 }

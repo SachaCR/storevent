@@ -6,6 +6,9 @@ import {
   AccountState,
 } from "./types";
 
+export * from "./reducers";
+export * from "./accountEventStore";
+
 export class Account {
   #state: AccountState;
   #reducer: AccountReducer;
@@ -28,7 +31,6 @@ export class Account {
     const accountId = params.accountId;
 
     const event: AccountCreated = {
-      entityId: accountId,
       name: "AccountCreated",
       payload: {
         accountId,
@@ -38,7 +40,7 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce(this.#state, [event]);
+    this.#state = this.#reducer.reduce([event], this.#state).state;
 
     return event;
   }
@@ -49,7 +51,6 @@ export class Account {
     }
 
     const event: AccountCredited = {
-      entityId: this.#state.accountId,
       name: "AccountCredited",
       payload: {
         amount: params.amount,
@@ -57,7 +58,7 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce(this.#state, [event]);
+    this.#state = this.#reducer.reduce([event], this.#state).state;
     return event;
   }
 
@@ -71,7 +72,6 @@ export class Account {
     }
 
     const event: AccountDebited = {
-      entityId: this.#state.accountId,
       name: "AccountDebited",
       payload: {
         amount: params.amount,
@@ -79,7 +79,7 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce(this.#state, [event]);
+    this.#state = this.#reducer.reduce([event], this.#state).state;
 
     return event;
   }

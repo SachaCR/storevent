@@ -25,7 +25,7 @@
       {
         "publicPath": "./docs/test-reports",
         "filename": "index.html",
-        "openReport": true,
+        "openReport": false,
         "pageTitle": "Remake tests report"
       }
     ]
