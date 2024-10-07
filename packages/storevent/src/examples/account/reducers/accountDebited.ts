@@ -1,15 +1,15 @@
 import { AccountDebited, AccountState } from "../interfaces";
 
 export function applyAccountDebitedEvent(params: {
-  currentState: AccountState;
+  state: AccountState;
   event: AccountDebited;
 }): AccountState {
-  const { currentState, event } = params;
+  const { state, event } = params;
 
   return {
-    accountId: currentState.accountId,
-    balance: currentState.balance - event.payload.amount,
-    currency: currentState.currency,
-    status: currentState.status,
+    accountId: state.accountId,
+    balance: state.balance - event.payload.amount,
+    currency: state.currency,
+    status: state.status,
   };
 }

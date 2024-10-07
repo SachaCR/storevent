@@ -1,12 +1,9 @@
 import { JsonSerializable, Storevent } from "../interfaces";
 
 export type EventReducer<
-  State extends JsonSerializable,
   Event extends Storevent,
-> = (params: { event: Event; state?: State }) => {
-  state: State;
-  sequence: number;
-};
+  State extends JsonSerializable,
+> = (params: { event: Event; state: State }) => State;
 
 export interface EntityReducerInterface<
   State extends JsonSerializable,
@@ -14,14 +11,18 @@ export interface EntityReducerInterface<
 > {
   entityName: string;
 
-  mountEventReducer: (params: {
-    eventName: string;
-    eventReducer: EventReducer<State, Event>;
-  }) => void;
+  mountEventReducer<EventName extends string>(
+    eventName: EventName,
+    eventReducer: EventReducer<Extract<Event, { name: EventName }>, State>,
+  ): void;
 
-  reduceEvents: (params: { events: Event[]; state: State }) => {
+  reduceEvents: (params: {
+    events: Event[];
     state: State;
-    sequence: number;
+    stateVersion: number;
+  }) => {
+    state: State;
+    version: number;
   };
 }
 
@@ -30,30 +31,35 @@ export class EntityReducer<
   Event extends Storevent,
 > implements EntityReducerInterface<State, Event>
 {
-  #reducers: Map<string, EventReducer<State, Event>>;
+  #reducers: Map<Event["name"], EventReducer<Event, State>>;
   #entityName: string;
 
   constructor(entityName: string) {
     this.#entityName = entityName;
-    this.#reducers = new Map<string, EventReducer<State, Event>>();
+    this.#reducers = new Map<Event["name"], EventReducer<Event, State>>();
   }
 
-  mountEventReducer(params: {
-    eventName: string;
-    eventReducer: EventReducer<State, keyof Event>;
-  }): void {
-    const { eventName, eventReducer } = params;
-    this.#reducers.set(eventName, eventReducer);
+  //name: Name, callback: (event: Extract<Events, { name: Name }>) => void
+
+  mountEventReducer<EventName extends Event["name"]>(
+    eventName: EventName,
+    eventReducer: EventReducer<Extract<Event, { name: EventName }>, State>,
+  ): void {
+    this.#reducers.set(eventName, eventReducer as EventReducer<Event, State>);
   }
 
-  reduceEvents(params: { state: State; events: Event[] }): {
+  reduceEvents(params: {
     state: State;
-    sequence: number;
+    events: Event[];
+    stateVersion: number;
+  }): {
+    state: State;
+    version: number;
   } {
-    const { state, events } = params;
+    const { state, events, stateVersion } = params;
 
     let newState = structuredClone(state);
-    let newSequence = 0;
+    let newVersion = stateVersion;
 
     for (const event of events) {
       const reducer = this.#reducers.get(event.name);
@@ -64,18 +70,17 @@ export class EntityReducer<
         );
       }
 
-      const result = reducer({
+      newState = reducer({
         event: event,
         state: newState,
       });
 
-      newState = result.state;
-      newSequence = result.sequence;
+      newVersion = newVersion++;
     }
 
     return {
       state: newState,
-      sequence: newSequence,
+      version: newVersion,
     };
   }
 

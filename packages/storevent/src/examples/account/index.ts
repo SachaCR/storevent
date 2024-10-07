@@ -6,38 +6,24 @@ import {
   AccountEvent,
   AccountState,
 } from "./interfaces";
-import { applyAccountCreatedEvent } from "./reducers/accountCreated";
-import { applyAccountCreditedEvent } from "./reducers/accountCredited";
-import { applyAccountDebitedEvent } from "./reducers/accountDebited";
 
-export * from "./reducers";
 export * from "./interfaces";
 export * from "./accountEventStore";
 export * from "./accountSnapshotStore";
 export * from "./accountHybridStore";
+export * from "./accountReducer";
 
 export class Account {
   #state: AccountState;
   #reducer: AccountReducer;
+  #version: number;
 
-  constructor(state?: AccountState) {
+  constructor(params?: { state: AccountState; version: number }) {
+    const { state, version } = params ?? {};
+
     this.#state = state ?? Account.initialState();
-    this.#reducer = new AccountReducer("Account");
-
-    this.#reducer.mountEventReducer({
-      eventName: "AccountCreated",
-      eventReducer: applyAccountCreatedEvent,
-    });
-
-    this.#reducer.mountEventReducer({
-      eventName: "AccountCredited",
-      eventReducer: applyAccountCreditedEvent,
-    });
-
-    this.#reducer.mountEventReducer({
-      eventName: "AccountDebited",
-      eventReducer: applyAccountDebitedEvent,
-    });
+    this.#reducer = new AccountReducer();
+    this.#version = version ?? 0;
   }
 
   static initialState(): AccountState {
@@ -50,9 +36,10 @@ export class Account {
   }
 
   #updateState(event: AccountEvent) {
-    this.#state = this.#reducer.reduce({
-      state: this.#state,
+    this.#state = this.#reducer.reduceEvents({
       events: [event],
+      state: this.#state,
+      stateVersion: this.#version,
     }).state;
   }
 

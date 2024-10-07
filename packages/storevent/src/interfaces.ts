@@ -3,13 +3,13 @@ export interface Storevent {
   payload: JsonSerializable;
 }
 
-export interface EntityReducer<State, Event extends Storevent> {
-  entityName: string;
-  reduce: (params: { events: Event[]; state?: State }) => {
-    state: State;
-    sequence: number;
-  };
-}
+// export interface EntityReducer<State, Event extends Storevent<string>> {
+//   entityName: string;
+//   reduce: (params: { events: Event[]; state?: State }) => {
+//     state: State;
+//     sequence: number;
+//   };
+// }
 
 export type JsonPrimitives =
   | null

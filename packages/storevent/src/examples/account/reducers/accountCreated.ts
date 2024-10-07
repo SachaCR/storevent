@@ -2,6 +2,7 @@ import { AccountCreated, AccountState } from "../interfaces";
 
 export function applyAccountCreatedEvent(params: {
   event: AccountCreated;
+  state: AccountState;
 }): AccountState {
   const event = params.event;
 

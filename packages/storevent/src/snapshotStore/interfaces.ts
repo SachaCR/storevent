@@ -2,7 +2,7 @@ import { JsonSerializable } from "../interfaces";
 
 export interface SnapshotData<State extends JsonSerializable> {
   state: State;
-  sequence: number;
+  version: number;
 }
 
 export interface SaveSnapshotOptions {
@@ -14,7 +14,7 @@ export interface SnapshotStore<State extends JsonSerializable> {
     params: {
       entityId: string;
       snapshot: State;
-      sequence: number;
+      version: number;
     },
     options?: SaveSnapshotOptions,
   ): Promise<void>;
@@ -23,6 +23,6 @@ export interface SnapshotStore<State extends JsonSerializable> {
 
   getSnapshot(params: {
     entityId: string;
-    sequence: number;
+    version: number;
   }): Promise<SnapshotData<State> | undefined>;
 }

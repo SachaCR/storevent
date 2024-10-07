@@ -1,9 +1,5 @@
-import {
-  Account,
-  AccountEventStore,
-  AccountReducer,
-  AccountSnapshotStore,
-} from "..";
+import { Account, AccountEventStore, AccountSnapshotStore } from "..";
+import { AccountReducer } from "../accountReducer";
 import { AccountCreated, AccountCredited, AccountDebited } from "../interfaces";
 
 describe("Component Account", () => {
@@ -57,10 +53,16 @@ describe("Component Account", () => {
     expect(accountEvents.events.length).toStrictEqual(1);
     expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
 
-    const accountState = new AccountReducer().reduce({
+    const accountState = new AccountReducer().reduceEvents({
+      state: Account.initialState(),
+      stateVersion: 0,
       events: accountEvents.events,
     });
-    const account = new Account(accountState.state);
+
+    const account = new Account({
+      state: accountState.state,
+      version: accountState.version,
+    });
 
     const creditEvent = account.credit({
       amount: 123,
@@ -106,8 +108,10 @@ describe("Component Account", () => {
 
     expect(accountEventList.lastEventSequenceNumber).toStrictEqual(2);
 
-    const newState = new AccountReducer().reduce({
+    const newState = new AccountReducer().reduceEvents({
       events: accountEventList.events,
+      state: Account.initialState(),
+      stateVersion: 0,
     });
 
     expect(newState.state).toStrictEqual(account.getState());
@@ -132,12 +136,14 @@ describe("Component Account", () => {
     expect(accountEvents.events.length).toStrictEqual(1);
     expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
 
-    const accountState = new AccountReducer().reduce({
+    const accountState = new AccountReducer().reduceEvents({
       events: accountEvents.events,
+      state: Account.initialState(),
+      stateVersion: 0,
     });
 
-    const account = new Account(accountState.state);
-    const accountInParalllel = new Account(accountState.state);
+    const account = new Account(accountState);
+    const accountInParalllel = new Account(accountState);
 
     const creditEvent = account.credit({
       amount: 123,
@@ -187,49 +193,51 @@ describe("Component AccountSnapshotStore", () => {
       payload: { amount: 123, currency: "EUR" },
     };
 
-    const result = new AccountReducer().reduce({
+    const result = new AccountReducer().reduceEvents({
       events: [accountCreatedEvent, accountCreditedEvent],
+      state: Account.initialState(),
+      stateVersion: 0,
     });
 
     const accountState = result.state;
-    const accountSequence = result.sequence;
+    const accountVersion = result.version;
 
     await accountSnapshotStore.saveSnapshot({
       entityId: accountId,
       snapshot: accountState,
-      sequence: accountSequence,
+      version: accountVersion,
     });
 
     const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
 
     expect(snapshot1.state).toStrictEqual(accountState);
-    expect(snapshot1.sequence).toStrictEqual(accountSequence);
+    expect(snapshot1.version).toStrictEqual(accountVersion);
 
     const accountDebitedEvent: AccountDebited = {
       name: "AccountDebited",
       payload: { amount: 12, currency: "EUR" },
     };
 
-    const newAccountState = new AccountReducer().reduce({
+    const newAccountState = new AccountReducer().reduceEvents({
       events: [accountDebitedEvent],
       state: accountState,
-      stateSequence: accountSequence,
+      stateVersion: accountVersion,
     });
 
     await accountSnapshotStore.saveSnapshot({
       entityId: accountId,
       snapshot: newAccountState.state,
-      sequence: newAccountState.sequence,
+      version: newAccountState.version,
     });
 
     const snapshot2 = await accountSnapshotStore.getLastSnapshot(accountId);
 
     expect(snapshot2.state).toStrictEqual(newAccountState.state);
-    expect(snapshot2.sequence).toStrictEqual(newAccountState.sequence);
+    expect(snapshot2.version).toStrictEqual(newAccountState.version);
 
     const snapshotFound = await accountSnapshotStore.getSnapshot({
       entityId: accountId,
-      sequence: accountSequence,
+      version: accountVersion,
     });
 
     if (snapshotFound === undefined) {
@@ -238,7 +246,7 @@ describe("Component AccountSnapshotStore", () => {
 
     expect(snapshotFound).toBeDefined();
     expect(snapshotFound.state).toStrictEqual(accountState);
-    expect(snapshotFound.sequence).toStrictEqual(accountSequence);
+    expect(snapshotFound.version).toStrictEqual(accountVersion);
   });
 });
 
@@ -262,27 +270,29 @@ describe("Component AccountSnapshotStore", () => {
       payload: { amount: 123, currency: "EUR" },
     };
 
-    const result = new AccountReducer().reduce({
+    const result = new AccountReducer().reduceEvents({
       events: [accountCreatedEvent, accountCreditedEvent],
+      state: Account.initialState(),
+      stateVersion: 0,
     });
 
     const accountState = result.state;
-    const accountSequence = result.sequence;
+    const accountVersion = result.version;
 
     await accountSnapshotStore.saveSnapshot({
       entityId: accountId,
       snapshot: accountState,
-      sequence: accountSequence,
+      version: accountVersion,
     });
 
     const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
 
     expect(snapshot1.state).toStrictEqual(accountState);
-    expect(snapshot1.sequence).toStrictEqual(accountSequence);
+    expect(snapshot1.version).toStrictEqual(accountVersion);
 
     const undefinedSnapshot = await accountSnapshotStore.getSnapshot({
       entityId: accountId,
-      sequence: 34,
+      version: 34,
     });
 
     expect(undefinedSnapshot).toBeUndefined();

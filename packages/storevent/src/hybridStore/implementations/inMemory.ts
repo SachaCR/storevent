@@ -41,7 +41,7 @@ export class InMemoryHybridStore<
     await this.saveSnapshot({
       entityId,
       snapshot: snapshot.state,
-      sequence: snapshot.sequence,
+      version: snapshot.version,
     });
 
     return Promise.resolve();
@@ -70,36 +70,36 @@ export class InMemoryHybridStore<
 
   getSnapshot(params: {
     entityId: string;
-    sequence: number;
+    version: number;
   }): Promise<SnapshotData<State> | undefined> {
-    const { entityId, sequence } = params;
+    const { entityId, version } = params;
     const snapshots = this.#snapshotMap.get(entityId) ?? [];
 
     return Promise.resolve(
-      snapshots.find((snapshot) => snapshot.sequence === sequence),
+      snapshots.find((snapshot) => snapshot.version === version),
     );
   }
 
   saveSnapshot(
-    params: { entityId: string; snapshot: State; sequence: number },
+    params: { entityId: string; snapshot: State; version: number },
     options?: { writeMode?: "APPEND" | "COMPACT" | "OVERWRITE_LAST" },
   ): Promise<void> {
-    const { entityId, snapshot, sequence } = params;
+    const { entityId, snapshot, version } = params;
     const writeMode = options?.writeMode ?? "APPEND";
 
     const snapshots = this.#snapshotMap.get(entityId) ?? [];
 
     switch (writeMode) {
       case "APPEND":
-        snapshots.push({ state: snapshot, sequence });
+        snapshots.push({ state: snapshot, version });
         break;
 
       case "COMPACT":
-        this.#snapshotMap.set(entityId, [{ state: snapshot, sequence }]);
+        this.#snapshotMap.set(entityId, [{ state: snapshot, version }]);
         return Promise.resolve();
 
       case "OVERWRITE_LAST":
-        snapshots[snapshots.length - 1] = { state: snapshot, sequence };
+        snapshots[snapshots.length - 1] = { state: snapshot, version };
         break;
 
       default:
