@@ -1,13 +1,20 @@
-import { AccountReducer } from "./reducers";
+import { AccountReducer } from "./accountReducer";
 import {
   AccountCreated,
   AccountCredited,
   AccountDebited,
+  AccountEvent,
   AccountState,
-} from "./types";
+} from "./interfaces";
+import { applyAccountCreatedEvent } from "./reducers/accountCreated";
+import { applyAccountCreditedEvent } from "./reducers/accountCredited";
+import { applyAccountDebitedEvent } from "./reducers/accountDebited";
 
 export * from "./reducers";
+export * from "./interfaces";
 export * from "./accountEventStore";
+export * from "./accountSnapshotStore";
+export * from "./accountHybridStore";
 
 export class Account {
   #state: AccountState;
@@ -15,7 +22,22 @@ export class Account {
 
   constructor(state?: AccountState) {
     this.#state = state ?? Account.initialState();
-    this.#reducer = new AccountReducer();
+    this.#reducer = new AccountReducer("Account");
+
+    this.#reducer.mountEventReducer({
+      eventName: "AccountCreated",
+      eventReducer: applyAccountCreatedEvent,
+    });
+
+    this.#reducer.mountEventReducer({
+      eventName: "AccountCredited",
+      eventReducer: applyAccountCreditedEvent,
+    });
+
+    this.#reducer.mountEventReducer({
+      eventName: "AccountDebited",
+      eventReducer: applyAccountDebitedEvent,
+    });
   }
 
   static initialState(): AccountState {
@@ -25,6 +47,13 @@ export class Account {
       currency: "VOID",
       balance: 0,
     };
+  }
+
+  #updateState(event: AccountEvent) {
+    this.#state = this.#reducer.reduce({
+      state: this.#state,
+      events: [event],
+    }).state;
   }
 
   open(params: { accountId: string }): AccountCreated {
@@ -40,7 +69,7 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce([event], this.#state).state;
+    this.#updateState(event);
 
     return event;
   }
@@ -58,7 +87,8 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce([event], this.#state).state;
+    this.#updateState(event);
+
     return event;
   }
 
@@ -79,7 +109,7 @@ export class Account {
       },
     };
 
-    this.#state = this.#reducer.reduce([event], this.#state).state;
+    this.#updateState(event);
 
     return event;
   }

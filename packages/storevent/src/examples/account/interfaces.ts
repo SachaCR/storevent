@@ -1,6 +1,6 @@
-import { DomainEvent } from "../eventStore";
+import { JsonSerializable, Storevent } from "../../interfaces";
 
-export interface AccountCreated extends DomainEvent {
+export interface AccountCreated extends Storevent {
   name: "AccountCreated";
   payload: {
     accountId: string;
@@ -10,7 +10,7 @@ export interface AccountCreated extends DomainEvent {
   };
 }
 
-export interface AccountCredited extends DomainEvent {
+export interface AccountCredited extends Storevent {
   name: "AccountCredited";
   payload: {
     amount: number;
@@ -18,7 +18,7 @@ export interface AccountCredited extends DomainEvent {
   };
 }
 
-export interface AccountDebited extends DomainEvent {
+export interface AccountDebited extends Storevent {
   name: "AccountDebited";
   payload: {
     amount: number;
@@ -28,7 +28,7 @@ export interface AccountDebited extends DomainEvent {
 
 export type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
 
-export interface AccountState {
+export interface AccountState extends JsonSerializable {
   accountId: string;
   status: "VOID" | "OPEN";
   balance: number;

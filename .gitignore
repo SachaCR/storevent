@@ -15,6 +15,5 @@ builds
 coverage
 test-reports
 dist
-docs/pages
 scripts/
-.structurizr
+docs
