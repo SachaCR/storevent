@@ -9,6 +9,18 @@ import {
 import { EntityReducer } from "../entityReducer";
 
 describe("Component EntityReducer", () => {
+  describe("Given an entityReducer", () => {
+    const testEntityReducer = new EntityReducer<TestState, TestEvent>(
+      "TestEntity",
+    );
+
+    describe("When I read entityName", () => {
+      test("Then it return expected entity name", () => {
+        expect(testEntityReducer.entityName).toStrictEqual("TestEntity");
+      });
+    });
+  });
+
   describe("Given an entityReducer without reducers", () => {
     const testEntityReducer = new EntityReducer<TestState, TestEvent>(
       "TestEntity",

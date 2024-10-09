@@ -27,6 +27,7 @@ describe("Component InMemoryEventStore", () => {
           entityId,
         });
 
+        expect(eventStore.entityName).toStrictEqual("TestEntity");
         expect(result.lastEventSequenceNumber).toStrictEqual(4);
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventA",

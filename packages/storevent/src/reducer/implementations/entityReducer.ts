@@ -1,4 +1,4 @@
-import { UnknownReducer } from "../../errors/unknownReducerError";
+import { UnknownReducer } from "../../errors";
 import { JsonSerializable, Storevent } from "../../interfaces";
 import { EntityReducerInterface, EventReducer } from "../interfaces";
 

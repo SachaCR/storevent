@@ -1,4 +1,4 @@
-import { ConcurrencyError } from "../../errors/concurrencyError";
+import { ConcurrencyError } from "../../errors";
 import { Storevent } from "../../interfaces";
 import { AppendEventOptions, EventStore } from "../interfaces";
 
