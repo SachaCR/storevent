@@ -9,6 +9,26 @@ import {
 import { EntityReducer } from "../entityReducer";
 
 describe("Component EntityReducer", () => {
+  describe("Given an entityReducer without reducers", () => {
+    const testEntityReducer = new EntityReducer<TestState, TestEvent>(
+      "TestEntity",
+    );
+
+    const eventList = [buildTestEvent("EventA")];
+
+    describe("When I reduce an event", () => {
+      test("Then it throw a UNKNOWN_REDUCER error", () => {
+        expect(() => {
+          testEntityReducer.reduceEvents({
+            events: eventList,
+            state: { result: [] },
+            stateVersion: 0,
+          });
+        }).toThrow("TestEntity: No reducer found for event: EventA");
+      });
+    });
+  });
+
   describe("Given an entityReducer", () => {
     const testEntityReducer = new EntityReducer<TestState, TestEvent>(
       "TestEntity",
