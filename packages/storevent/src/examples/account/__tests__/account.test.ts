@@ -30,7 +30,7 @@ describe("Component Account", () => {
         balance: 0,
       },
     });
-    expect(events.lastEventSequenceNumber).toStrictEqual(0);
+    expect(events.lastEventSequenceNumber).toStrictEqual(1);
   });
 });
 
@@ -106,7 +106,7 @@ describe("Component Account", () => {
       "AccountDebited",
     ]);
 
-    expect(accountEventList.lastEventSequenceNumber).toStrictEqual(2);
+    expect(accountEventList.lastEventSequenceNumber).toStrictEqual(3);
 
     const newState = new AccountReducer().reduceEvents({
       events: accountEventList.events,
@@ -158,7 +158,7 @@ describe("Component Account", () => {
     await accountEventStore.append(
       { entityId: accountId, events: [creditEvent] },
       {
-        appendAfterSequenceNumber: 0,
+        appendAfterSequenceNumber: 1,
       },
     );
 
@@ -166,7 +166,7 @@ describe("Component Account", () => {
       accountEventStore.append(
         { entityId: accountId, events: [creditEventInParallel] },
         {
-          appendAfterSequenceNumber: 0,
+          appendAfterSequenceNumber: 1,
         },
       ),
     ).rejects.toThrow("Concurrency error");

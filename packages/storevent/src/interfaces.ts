@@ -3,6 +3,8 @@ export interface Storevent {
   payload: JsonSerializable;
 }
 
+export type JsonSerializable = Record<string, JsonPrimitives>;
+
 export type JsonPrimitives =
   | null
   | string
@@ -10,5 +12,3 @@ export type JsonPrimitives =
   | boolean
   | { [key: string]: JsonPrimitives }
   | JsonPrimitives[];
-
-export type JsonSerializable = Record<string, JsonPrimitives>;

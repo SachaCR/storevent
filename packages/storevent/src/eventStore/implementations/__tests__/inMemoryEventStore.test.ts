@@ -1,43 +1,7 @@
-import { Storevent } from "../../../interfaces";
 import { InMemoryEventStore } from "../inMemory";
+import { buildTestEvent, TestEvent } from "../../../__tests__/testEvents";
 
 describe("Component InMemoryEventStore", () => {
-  interface TestEventA extends Storevent {
-    name: "EventA";
-    payload: {
-      message: string;
-    };
-  }
-
-  interface TestEventB extends Storevent {
-    name: "EventB";
-    payload: {
-      message: string;
-    };
-  }
-
-  interface TestEventC extends Storevent {
-    name: "EventC";
-    payload: {
-      message: string;
-    };
-  }
-
-  type TestEvent = TestEventA | TestEventB | TestEventC;
-
-  function buildTestEvent<EventName extends TestEvent["name"]>(
-    name: EventName,
-  ): TestEvent {
-    const event: TestEvent = {
-      name,
-      payload: {
-        message: `I'm a test ${name}`,
-      },
-    };
-
-    return event;
-  }
-
   describe("Given some events", () => {
     describe("When I append them", () => {
       test("Then I can retrieve them from the event store", async () => {
@@ -63,7 +27,7 @@ describe("Component InMemoryEventStore", () => {
           entityId,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(3);
+        expect(result.lastEventSequenceNumber).toStrictEqual(4);
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventA",
           "EventB",
@@ -111,7 +75,7 @@ describe("Component InMemoryEventStore", () => {
           "EventC",
           "EventB",
         ]);
-        expect(result.lastEventSequenceNumber).toStrictEqual(3);
+        expect(result.lastEventSequenceNumber).toStrictEqual(4);
 
         const resultEntity2 = await eventStore.getEventsFromSequenceNumber({
           entityId: entityId2,
@@ -123,7 +87,7 @@ describe("Component InMemoryEventStore", () => {
           "EventB",
           "EventC",
         ]);
-        expect(resultEntity2.lastEventSequenceNumber).toStrictEqual(4);
+        expect(resultEntity2.lastEventSequenceNumber).toStrictEqual(5);
       });
     });
   });
@@ -151,7 +115,7 @@ describe("Component InMemoryEventStore", () => {
               events: [buildTestEvent("EventA")],
             },
             {
-              appendAfterSequenceNumber: 3,
+              appendAfterSequenceNumber: 4,
             },
           );
         });
@@ -203,7 +167,7 @@ describe("Component InMemoryEventStore", () => {
           entityId: unknownEntityId,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(-1);
+        expect(result.lastEventSequenceNumber).toStrictEqual(0);
         expect(result.events.map((event) => event.name)).toStrictEqual([]);
       });
     });
@@ -214,7 +178,7 @@ describe("Component InMemoryEventStore", () => {
       test("Then it returns an empty array with sequence equals to the last entity sequence", async () => {
         const eventStore = new InMemoryEventStore<TestEvent>("TestEntity");
         const entityId = "1";
-        const lastSequenceExpected = 1;
+        const lastSequenceExpected = 2;
 
         await eventStore.append({
           entityId: "1",
@@ -239,7 +203,7 @@ describe("Component InMemoryEventStore", () => {
       test("Then it returns event from sequence 0", async () => {
         const eventStore = new InMemoryEventStore<TestEvent>("TestEntity");
         const entityId = "1";
-        const lastSequenceExpected = 1;
+        const lastSequenceExpected = 2;
 
         await eventStore.append({
           entityId: "1",
@@ -267,7 +231,7 @@ describe("Component InMemoryEventStore", () => {
       test("Then it returns event from the floored sequence ", async () => {
         const eventStore = new InMemoryEventStore<TestEvent>("TestEntity");
         const entityId = "1";
-        const lastSequenceExpected = 3;
+        const lastSequenceExpected = 4;
 
         await eventStore.append({
           entityId: "1",

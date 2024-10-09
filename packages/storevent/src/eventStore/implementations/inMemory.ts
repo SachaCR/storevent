@@ -28,7 +28,7 @@ export class InMemoryEventStore<Event extends Storevent>
     const entityEvents = this.#eventMap.get(entityId) ?? [];
 
     if (options?.appendAfterSequenceNumber !== undefined) {
-      const lastEntitySequence = entityEvents.length - 1;
+      const lastEntitySequence = entityEvents.length;
 
       if (options.appendAfterSequenceNumber !== lastEntitySequence) {
         return Promise.reject(
@@ -63,12 +63,12 @@ export class InMemoryEventStore<Event extends Storevent>
 
     const entityEvents = this.#eventMap.get(entityId) ?? [];
 
-    const lastEntitySequence = entityEvents.length - 1;
+    const lastEntitySequence = entityEvents.length;
 
     const eventsFromSequence = entityEvents.slice(startingSequence);
 
     const lastEventSequenceNumber = Math.min(
-      startingSequence + eventsFromSequence.length - 1,
+      startingSequence + eventsFromSequence.length,
       lastEntitySequence,
     );
 

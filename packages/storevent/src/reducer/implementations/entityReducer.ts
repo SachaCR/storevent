@@ -50,7 +50,7 @@ export class EntityReducer<
         state: newState,
       });
 
-      newVersion = newVersion++;
+      newVersion = newVersion + 1;
     }
 
     return {
