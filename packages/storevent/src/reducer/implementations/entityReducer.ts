@@ -1,3 +1,4 @@
+import { UnknownReducer } from "../../errors/unknownReducerError";
 import { JsonSerializable, Storevent } from "../../interfaces";
 import { EntityReducerInterface, EventReducer } from "../interfaces";
 
@@ -13,8 +14,6 @@ export class EntityReducer<
     this.#entityName = entityName;
     this.#reducers = new Map<Event["name"], EventReducer<Event, State>>();
   }
-
-  //name: Name, callback: (event: Extract<Events, { name: Name }>) => void
 
   mountEventReducer<EventName extends Event["name"]>(
     eventName: EventName,
@@ -40,9 +39,10 @@ export class EntityReducer<
       const reducer = this.#reducers.get(event.name);
 
       if (!reducer) {
-        throw new Error(
-          `${this.#entityName}: No reducer found for event ${event.name}`,
-        );
+        throw new UnknownReducer({
+          entityName: this.#entityName,
+          eventName: event.name,
+        });
       }
 
       newState = reducer({

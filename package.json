@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "npm run all:test",
     "all": "npm run all:test && npm run all:fix && npm run all:lint && npm run all:type-check && npm run all:build",
     "all:test": "npm run test --ws",
     "all:fix": "npm run fix --ws",

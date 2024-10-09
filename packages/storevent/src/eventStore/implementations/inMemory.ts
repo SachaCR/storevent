@@ -1,13 +1,20 @@
+import { ConcurrencyError } from "../../errors/concurrencyError";
 import { Storevent } from "../../interfaces";
 import { AppendEventOptions, EventStore } from "../interfaces";
 
 export class InMemoryEventStore<Event extends Storevent>
   implements EventStore<Event>
 {
+  #entityName: string;
   #eventMap: Map<string, Event[]>;
 
-  constructor() {
+  constructor(entityName: string) {
+    this.#entityName = entityName;
     this.#eventMap = new Map<string, Event[]>();
+  }
+
+  get entityName(): string {
+    return this.#entityName;
   }
 
   append(
@@ -24,7 +31,13 @@ export class InMemoryEventStore<Event extends Storevent>
       const lastEntitySequence = entityEvents.length - 1;
 
       if (options.appendAfterSequenceNumber !== lastEntitySequence) {
-        return Promise.reject(new Error("Concurrency error"));
+        return Promise.reject(
+          new ConcurrencyError({
+            entityId,
+            entityName: this.#entityName,
+            sequenceInConflict: options.appendAfterSequenceNumber,
+          }),
+        );
       }
     }
 
@@ -41,13 +54,27 @@ export class InMemoryEventStore<Event extends Storevent>
   }): Promise<{ events: Event[]; lastEventSequenceNumber: number }> {
     const { entityId, sequenceNumber } = params;
 
+    let sanitizedSequenceNumber = sequenceNumber ?? 0;
+    if (sanitizedSequenceNumber < 0) {
+      sanitizedSequenceNumber = 0;
+    }
+
+    const startingSequence = Math.floor(sanitizedSequenceNumber);
+
     const entityEvents = this.#eventMap.get(entityId) ?? [];
 
-    const eventsFromSequence = entityEvents.slice(sequenceNumber ?? 0);
+    const lastEntitySequence = entityEvents.length - 1;
+
+    const eventsFromSequence = entityEvents.slice(startingSequence);
+
+    const lastEventSequenceNumber = Math.min(
+      startingSequence + eventsFromSequence.length - 1,
+      lastEntitySequence,
+    );
 
     return Promise.resolve({
       events: eventsFromSequence,
-      lastEventSequenceNumber: eventsFromSequence.length - 1,
+      lastEventSequenceNumber,
     });
   }
 }

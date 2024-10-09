@@ -1,3 +1,4 @@
+import { ConcurrencyError } from "../../errors/concurrencyError";
 import { JsonSerializable, Storevent } from "../../interfaces";
 import { SnapshotData } from "../../snapshotStore";
 import { switchCaseGuard } from "../../switchCaseGuard";
@@ -12,12 +13,18 @@ export class InMemoryHybridStore<
   State extends JsonSerializable,
 > implements HybridStore<Event, State>
 {
+  #entityName: string;
   #eventMap: Map<string, Event[]>;
   #snapshotMap: Map<string, SnapshotData<State>[]>;
 
-  constructor() {
+  constructor(entityName: string) {
+    this.#entityName = entityName;
     this.#eventMap = new Map<string, Event[]>();
     this.#snapshotMap = new Map<string, SnapshotData<State>[]>();
+  }
+
+  get entityName(): string {
+    return this.#entityName;
   }
 
   async append(
@@ -31,7 +38,11 @@ export class InMemoryHybridStore<
       const lastEntitySequence = Math.max(entityEvents.length - 1, 0);
 
       if (options.appendAfterSequenceNumber !== lastEntitySequence) {
-        return Promise.reject(new Error("Concurrency error"));
+        throw new ConcurrencyError({
+          entityId,
+          entityName: "unknown",
+          sequenceInConflict: options.appendAfterSequenceNumber,
+        });
       }
     }
 

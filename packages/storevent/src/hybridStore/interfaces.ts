@@ -21,6 +21,8 @@ export interface HybridStore<
   Event extends Storevent,
   State extends JsonSerializable,
 > extends SnapshotStore<State> {
+  entityName: string;
+
   append(
     params: HybridAppendParams<Event, State>,
     options?: AppendHybridEventOptions,
