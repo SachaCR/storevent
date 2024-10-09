@@ -1,4 +1,4 @@
-import { EntityReducer } from "../../reducer/interfaces";
+import { EntityReducer } from "../../reducer";
 import { AccountEvent, AccountState } from "./interfaces";
 import { applyAccountCreatedEvent } from "./reducers/accountCreated";
 import { applyAccountCreditedEvent } from "./reducers/accountCredited";
