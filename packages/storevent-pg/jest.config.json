@@ -1,0 +1,34 @@
+{
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "src/**/*.ts",
+    "!**/node_modules/**",
+    "!src/examples/**"
+  ],
+  "coverageReporters": [
+    "lcov"
+  ],
+  "coverageDirectory": "./docs/coverage",
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "testPathIgnorePatterns": [
+    "<rootDir>/build/",
+    "<rootDir>/node_modules/"
+  ],
+  "prettierPath": null,
+  "testMatch": [
+    "**/*.test.ts"
+  ],
+  "reporters": [
+    "default",
+    [
+      "jest-html-reporters",
+      {
+        "publicPath": "./docs/test-reports",
+        "filename": "index.html",
+        "openReport": false,
+        "pageTitle": "Remake tests report"
+      }
+    ]
+  ]
+}
