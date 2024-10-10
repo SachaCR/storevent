@@ -1,7 +1,6 @@
-import { ConcurrencyError } from "../../errors/concurrencyError";
+import { InMemoryEventStore } from "../../eventStore";
 import { JsonSerializable, Storevent } from "../../interfaces";
-import { SnapshotData } from "../../snapshotStore";
-import { switchCaseGuard } from "../../switchCaseGuard";
+import { InMemorySnapshotStore, SnapshotData } from "../../snapshotStore";
 import {
   HybridAppendParams,
   AppendHybridEventOptions,
@@ -14,13 +13,14 @@ export class InMemoryHybridStore<
 > implements HybridStore<Event, State>
 {
   #entityName: string;
-  #eventMap: Map<string, Event[]>;
-  #snapshotMap: Map<string, SnapshotData<State>[]>;
+  #eventStore: InMemoryEventStore<Event>;
+  #snapshotStore: InMemorySnapshotStore<State>;
 
   constructor(entityName: string) {
     this.#entityName = entityName;
-    this.#eventMap = new Map<string, Event[]>();
-    this.#snapshotMap = new Map<string, SnapshotData<State>[]>();
+    this.#eventStore = new InMemoryEventStore<Event>(entityName);
+    this.#snapshotStore = new InMemorySnapshotStore<State>();
+    this;
   }
 
   get entityName(): string {
@@ -32,28 +32,19 @@ export class InMemoryHybridStore<
     options?: AppendHybridEventOptions,
   ): Promise<void> {
     const { entityId, events, snapshot } = params;
-    const entityEvents = this.#eventMap.get(entityId) ?? [];
+    await this.#eventStore.append(
+      { entityId, events },
+      { appendAfterSequenceNumber: options?.appendAfterSequenceNumber },
+    );
 
-    if (options?.appendAfterSequenceNumber !== undefined) {
-      const lastEntitySequence = Math.max(entityEvents.length - 1, 0);
-
-      if (options.appendAfterSequenceNumber !== lastEntitySequence) {
-        throw new ConcurrencyError({
-          entityId,
-          entityName: "unknown",
-          sequenceInConflict: options.appendAfterSequenceNumber,
-        });
-      }
-    }
-
-    entityEvents.push(...events);
-
-    this.#eventMap.set(entityId, entityEvents);
-    await this.saveSnapshot({
-      entityId,
-      snapshot: snapshot.state,
-      version: snapshot.version,
-    });
+    await this.#snapshotStore.saveSnapshot(
+      {
+        entityId,
+        snapshot: snapshot.state,
+        version: snapshot.version,
+      },
+      { writeMode: options?.writeMode },
+    );
 
     return Promise.resolve();
   }
@@ -62,63 +53,24 @@ export class InMemoryHybridStore<
     entityId: string;
     sequenceNumber?: number;
   }): Promise<{ events: Event[]; lastEventSequenceNumber: number }> {
-    const { entityId, sequenceNumber } = params;
-
-    const entityEvents = this.#eventMap.get(entityId) ?? [];
-
-    const eventsFromSequence = entityEvents.slice(sequenceNumber ?? 0);
-
-    return Promise.resolve({
-      events: eventsFromSequence,
-      lastEventSequenceNumber: eventsFromSequence.length - 1,
-    });
+    return this.#eventStore.getEventsFromSequenceNumber(params);
   }
 
   getLastSnapshot(entityId: string): Promise<SnapshotData<State>> {
-    const snapshots = this.#snapshotMap.get(entityId) ?? [];
-    return Promise.resolve(snapshots[snapshots.length - 1]);
+    return this.#snapshotStore.getLastSnapshot(entityId);
   }
 
   getSnapshot(params: {
     entityId: string;
     version: number;
   }): Promise<SnapshotData<State> | undefined> {
-    const { entityId, version } = params;
-    const snapshots = this.#snapshotMap.get(entityId) ?? [];
-
-    return Promise.resolve(
-      snapshots.find((snapshot) => snapshot.version === version),
-    );
+    return this.#snapshotStore.getSnapshot(params);
   }
 
   saveSnapshot(
     params: { entityId: string; snapshot: State; version: number },
     options?: { writeMode?: "APPEND" | "COMPACT" | "OVERWRITE_LAST" },
   ): Promise<void> {
-    const { entityId, snapshot, version } = params;
-    const writeMode = options?.writeMode ?? "APPEND";
-
-    const snapshots = this.#snapshotMap.get(entityId) ?? [];
-
-    switch (writeMode) {
-      case "APPEND":
-        snapshots.push({ state: snapshot, version });
-        break;
-
-      case "COMPACT":
-        this.#snapshotMap.set(entityId, [{ state: snapshot, version }]);
-        return Promise.resolve();
-
-      case "OVERWRITE_LAST":
-        snapshots[snapshots.length - 1] = { state: snapshot, version };
-        break;
-
-      default:
-        switchCaseGuard(writeMode);
-    }
-
-    this.#snapshotMap.set(entityId, snapshots);
-
-    return Promise.resolve();
+    return this.#snapshotStore.saveSnapshot(params, options);
   }
 }

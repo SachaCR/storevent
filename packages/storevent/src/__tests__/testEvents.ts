@@ -1,4 +1,5 @@
 import { JsonSerializable, Storevent } from "../interfaces";
+import { EntityReducer } from "../reducer";
 
 export interface TestEventA extends Storevent {
   name: "EventA";
@@ -57,6 +58,17 @@ export function applyTestEventC(params: {
   };
 }
 
+export function buildTestEntityReducer(): EntityReducer<TestState, TestEvent> {
+  const testEntityReducer = new EntityReducer<TestState, TestEvent>(
+    "TestEntity",
+  );
+
+  testEntityReducer.mountEventReducer("EventA", applyTestEventA);
+  testEntityReducer.mountEventReducer("EventB", applyTestEventB);
+  testEntityReducer.mountEventReducer("EventC", applyTestEventC);
+
+  return testEntityReducer;
+}
 export function buildTestEvent<EventName extends TestEvent["name"]>(
   name: EventName,
 ): TestEvent {

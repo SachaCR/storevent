@@ -1,6 +1,11 @@
-import { Account, AccountEventStore, AccountSnapshotStore } from "..";
+import {
+  Account,
+  AccountEventStore,
+  AccountHybridStore,
+  AccountSnapshotStore,
+} from "..";
 import { AccountReducer } from "../accountReducer";
-import { AccountCreated, AccountCredited, AccountDebited } from "../interfaces";
+import { AccountCreated, AccountCredited, AccountDebited } from "../";
 
 describe("Component Account", () => {
   test("Open an account ", async () => {
@@ -250,8 +255,8 @@ describe("Component AccountSnapshotStore", () => {
   });
 });
 
-describe("Component AccountSnapshotStore", () => {
-  const accountSnapshotStore = new AccountSnapshotStore();
+describe("Component AccountHybridStore", () => {
+  const accountSnapshotStore = new AccountHybridStore();
 
   test("Store and retrieve snapshots", async () => {
     const accountId = "1234";
