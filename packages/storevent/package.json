@@ -10,6 +10,7 @@
     "fix": "prettier src --write && eslint . --ext .ts --fix",
     "type-check": "tsc --noEmit"
   },
+  "license": "MIT",
   "author": "SachaCR",
   "devDependencies": {
     "@types/jest": "^29.5.12",

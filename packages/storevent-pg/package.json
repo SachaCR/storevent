@@ -1,0 +1,23 @@
+{
+  "name": "storevent-pg",
+  "version": "1.0.0",
+  "description": "Postgres implementation of storevent library interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SachaCR/storevent.git"
+  },
+  "keywords": [
+    "event",
+    "sourcing"
+  ],
+  "author": "Sacha Clerc-Renaud",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SachaCR/storevent/issues"
+  },
+  "homepage": "https://github.com/SachaCR/storevent#readme"
+}
