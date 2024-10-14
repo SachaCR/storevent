@@ -1,5 +1,5 @@
 {
-  "name": "@storevent/storevent",
+  "name": "@storevent/examples",
   "version": "0.0.1",
   "description": "",
   "main": "src/index.ts",
@@ -24,7 +24,9 @@
     "jest-html-reporters": "^3.1.7",
     "prettier": "^3.2.4",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@storevent/storevent": "*",
+    "@storevent/storevent-pg": "*"
   },
   "engines": {
     "node": "20.18.0",

@@ -4,8 +4,24 @@ on:
   push:
 
 jobs:
+
   test:
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,4 +41,5 @@ jobs:
         run: npm run all
 
         env:
+          NODE_ENV: ci
           CI: true

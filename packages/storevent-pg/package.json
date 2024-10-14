@@ -1,14 +1,15 @@
 {
-  "name": "storevent-pg",
+  "name": "@storevent/storevent-pg",
   "version": "1.0.0",
   "description": "Postgres implementation of storevent library interface",
   "main": "src/index.ts",
   "scripts": {
+    "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build",
     "build": "tsc",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests --runInBand  --detectOpenHandles",
     "lint": "eslint . --ext .ts",
     "fix": "prettier src --write && eslint . --ext .ts --fix",
-    "type-check": "tsc --noEmit"
+    "check-type": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -18,10 +19,32 @@
     "event",
     "sourcing"
   ],
+  "dependencies": {
+    "@storevent/storevent": "*",
+    "pg": "^8.13.0",
+    "pg-format": "^1.0.4"
+  },
   "author": "Sacha Clerc-Renaud",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/SachaCR/storevent/issues"
   },
-  "homepage": "https://github.com/SachaCR/storevent#readme"
+  "homepage": "https://github.com/SachaCR/storevent#readme",
+  "devDependencies": {
+    "@types/config": "^3.3.5",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.6",
+    "@types/pg": "^8.11.10",
+    "@types/pg-format": "^1.0.5",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "config": "^3.3.12",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "jest-html-reporters": "^3.1.7",
+    "prettier": "^3.2.4",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.3"
+  }
 }

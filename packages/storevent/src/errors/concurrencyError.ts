@@ -13,7 +13,7 @@ export class ConcurrencyError extends StoreventError<
     entityId: string;
     sequenceInConflict: number;
   }) {
-    const message = `Concurrency error: Someone else added new events for this sequence number ${details.sequenceInConflict}`;
+    const message = `Concurrency error: Someone else added new events after this sequence number ${details.sequenceInConflict}`;
 
     super({
       message,
