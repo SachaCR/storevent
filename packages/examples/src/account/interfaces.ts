@@ -1,4 +1,4 @@
-import { JsonSerializable, Storevent } from "../../interfaces";
+import { JsonSerializable, Storevent } from "@storevent/storevent";
 
 export interface AccountCreated extends Storevent {
   name: "AccountCreated";

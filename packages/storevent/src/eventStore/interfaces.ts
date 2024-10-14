@@ -10,6 +10,7 @@ export interface AppendEventOptions {
 
 export interface EventStore<Event extends Storevent> {
   entityName: string;
+
   append(
     params: {
       entityId: string;
