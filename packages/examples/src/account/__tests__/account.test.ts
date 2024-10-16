@@ -5,7 +5,7 @@ import {
   AccountSnapshotStore,
 } from "..";
 import { AccountReducer } from "../accountReducer";
-import { AccountCreated, AccountCredited, AccountDebited } from "../";
+import { AccountCreated, AccountCredited, AccountDebited } from "..";
 
 describe("Component Account", () => {
   test("Open an account ", async () => {
