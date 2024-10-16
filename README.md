@@ -11,4 +11,4 @@ It provides interfaces and concrete event store implementation for different dat
 
 # See an example here:
 
-https://github.com/SachaCR/storevent/tree/main/packages/examples/account
+https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account
