@@ -37,14 +37,16 @@ export class InMemoryHybridStore<
       { appendAfterSequenceNumber: options?.appendAfterSequenceNumber },
     );
 
-    await this.#snapshotStore.saveSnapshot(
-      {
-        entityId,
-        snapshot: snapshot.state,
-        version: snapshot.version,
-      },
-      { writeMode: options?.writeMode },
-    );
+    if (snapshot) {
+      await this.#snapshotStore.saveSnapshot(
+        {
+          entityId,
+          snapshot: snapshot.state,
+          version: snapshot.version,
+        },
+        { writeMode: options?.writeMode },
+      );
+    }
 
     return Promise.resolve();
   }

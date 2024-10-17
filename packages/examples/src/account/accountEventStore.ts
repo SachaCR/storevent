@@ -26,13 +26,3 @@ export class AccountPGEventStore extends PGEventStore<AccountEvent> {
     });
   }
 }
-
-/*
-{
-  host: "localhost",
-  name: "storevent-pg",
-  password: "admin",
-  port: 5432,
-  user: "postgres",
-}
-//*/

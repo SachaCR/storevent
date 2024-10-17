@@ -14,7 +14,7 @@ export interface HybridAppendParams<
 > {
   entityId: string;
   events: Event[];
-  snapshot: SnapshotData<State>;
+  snapshot?: SnapshotData<State>;
 }
 
 export interface HybridStore<

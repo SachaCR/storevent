@@ -1,10 +1,11 @@
 import config from "config";
 import { Client } from "pg";
 
-import { ConcurrencyError } from "@storevent/storevent";
+import { WrongSequenceError } from "@storevent/storevent";
 
-import { PGEventStore, PGEventStoreConfiguration } from "..";
+import { PGEventStore } from "..";
 import { clearDatabase } from "./clearDatabase";
+import { PGEventStoreConfiguration } from "../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
@@ -240,6 +241,81 @@ describe("Component PGEventStore.append()", () => {
       });
     });
 
+    describe("When I append new events specifying a last known sequence that is above the current last sequence", () => {
+      const newEventsToAppend = [
+        {
+          name: "event_4",
+          payload: { value: 4 },
+        },
+        {
+          name: "event_5",
+          payload: { value: 5 },
+        },
+      ];
+
+      test("Then it should throw an error", async () => {
+        let error;
+
+        try {
+          await myPGEventStore.append(
+            {
+              entityId,
+              events: newEventsToAppend,
+            },
+            {
+              appendAfterSequenceNumber: 56,
+            },
+          );
+        } catch (err: unknown) {
+          if (err instanceof WrongSequenceError) {
+            error = err;
+
+            expect(err.message).toStrictEqual(
+              "Wrong sequence error: event must be appended with a continuous sequence number 56",
+            );
+            expect(err.code).toStrictEqual("WRONG_SEQUENCE_ERROR");
+            expect(err.name).toStrictEqual("StoreventError");
+            expect(err.details?.entityId).toStrictEqual(entityId);
+            expect(err.details?.entityName).toStrictEqual("test_entity");
+            expect(err.details?.invalidSequence).toStrictEqual(56);
+          }
+        } finally {
+          await myPGEventStore.stop();
+        }
+
+        expect(error).toBeDefined();
+      });
+    });
+  });
+
+  describe("Given an entity id with some event stored", () => {
+    const entityId = crypto.randomUUID();
+    const myPGEventStore = new PGEventStore({
+      entityName: "test_entity",
+      database: DATABASE_CONFIG,
+    });
+
+    beforeAll(async () => {
+      await myPGEventStore.initTable();
+      await myPGEventStore.append({
+        entityId,
+        events: [
+          {
+            name: "event_1",
+            payload: { value: 1 },
+          },
+          {
+            name: "event_2",
+            payload: { value: 2 },
+          },
+          {
+            name: "event_3",
+            payload: { value: 3 },
+          },
+        ],
+      });
+    });
+
     describe("When I append new events specifying a conflicting sequence", () => {
       const conflictingSequence = 2; // This simulate events 3 has been inserted between my last read and this write attempt
       const newEventsToAppend = [
@@ -253,7 +329,7 @@ describe("Component PGEventStore.append()", () => {
         },
       ];
 
-      test("Then it throw a concurrency error", async () => {
+      test("Then it throw a wrong sequence error", async () => {
         let error;
 
         try {
@@ -267,22 +343,16 @@ describe("Component PGEventStore.append()", () => {
             },
           );
         } catch (err: unknown) {
-          if (err instanceof ConcurrencyError) {
+          if (err instanceof WrongSequenceError) {
             error = err;
             expect(err.message).toStrictEqual(
-              "Concurrency error: Someone else added new events after this sequence number 2",
+              "Wrong sequence error: event must be appended with a continuous sequence number 2",
             );
-            expect(err.code).toStrictEqual("CONCURRENCY_ERROR");
+            expect(err.code).toStrictEqual("WRONG_SEQUENCE_ERROR");
             expect(err.name).toStrictEqual("StoreventError");
             expect(err.details?.entityId).toStrictEqual(entityId);
             expect(err.details?.entityName).toStrictEqual("test_entity");
-            expect(err.details?.sequenceInConflict).toStrictEqual(2);
-
-            if (err.cause instanceof Error) {
-              expect(err.cause.message).toMatch(
-                'duplicate key value violates unique constraint "test_entity_events_pkey"',
-              );
-            }
+            expect(err.details?.invalidSequence).toStrictEqual(2);
           }
         } finally {
           await myPGEventStore.stop();

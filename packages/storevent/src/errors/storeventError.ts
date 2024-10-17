@@ -1,14 +1,14 @@
 /**
  * @description Abstract class that represent our custom errors.
- * @typeParam T - Type that will define the error code enum.
+ * @typeParam Code - Type that will define the error code enum.
+ * @typeParam Details - Type that will define the error details.
  */
-
 export abstract class StoreventError<
   Code extends string,
   Details = unknown,
 > extends Error {
   /**
-   * Custom error code matching type T
+   * Custom error code matching type Code
    */
   public code: Code;
   public details?: Details;

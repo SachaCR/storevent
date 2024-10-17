@@ -1,7 +1,6 @@
 import config from "config";
 import { Client } from "pg";
-
-import { PGEventStoreConfiguration } from "..";
+import { PGEventStoreConfiguration } from "../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
