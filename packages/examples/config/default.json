@@ -1,0 +1,9 @@
+{
+  "database": {
+    "host": "localhost",
+    "name": "storevent-pg",
+    "port": 5432,
+    "password": "admin",
+    "user": "postgres"
+  }
+}

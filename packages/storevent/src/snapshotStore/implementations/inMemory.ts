@@ -1,5 +1,4 @@
 import { JsonSerializable } from "../../interfaces";
-import { switchCaseGuard } from "../../switchCaseGuard";
 import { SnapshotData, SnapshotStore } from "../interfaces";
 
 export class InMemorySnapshotStore<State extends JsonSerializable>
@@ -28,31 +27,16 @@ export class InMemorySnapshotStore<State extends JsonSerializable>
     );
   }
 
-  saveSnapshot(
-    params: { entityId: string; snapshot: State; version: number },
-    options?: { writeMode?: "APPEND" | "COMPACT" | "OVERWRITE_LAST" },
-  ): Promise<void> {
+  saveSnapshot(params: {
+    entityId: string;
+    snapshot: State;
+    version: number;
+  }): Promise<void> {
     const { entityId, snapshot, version } = params;
-    const writeMode = options?.writeMode ?? "APPEND";
 
     const snapshots = this.#snapshotMap.get(entityId) ?? [];
 
-    switch (writeMode) {
-      case "APPEND":
-        snapshots.push({ state: snapshot, version });
-        break;
-
-      case "COMPACT":
-        this.#snapshotMap.set(entityId, [{ state: snapshot, version }]);
-        return Promise.resolve();
-
-      case "OVERWRITE_LAST":
-        snapshots[snapshots.length - 1] = { state: snapshot, version };
-        break;
-
-      default:
-        switchCaseGuard(writeMode);
-    }
+    snapshots.push({ state: snapshot, version });
 
     this.#snapshotMap.set(entityId, snapshots);
 

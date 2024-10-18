@@ -1,180 +1,221 @@
+import config from "config";
+import { PGEventStoreConfiguration } from "@storevent/storevent-pg";
+
 import {
   Account,
   AccountEventStore,
   AccountHybridStore,
+  AccountPGEventStore,
   AccountSnapshotStore,
 } from "..";
 import { AccountReducer } from "../accountReducer";
 import { AccountCreated, AccountCredited, AccountDebited } from "..";
+import { randomUUID } from "crypto";
 
-describe("Component Account", () => {
-  test("Open an account ", async () => {
-    const accountEventStore = new AccountEventStore();
-    const accountId = "123";
+const DATABASE_CONFIG =
+  config.get<PGEventStoreConfiguration["database"]>("database");
 
-    const account = new Account();
-    const accountCreatedEvent = account.open({ accountId });
+const pgEventStore = new AccountPGEventStore({ database: DATABASE_CONFIG });
 
-    await accountEventStore.append({
-      entityId: accountId,
-      events: [accountCreatedEvent],
+type EventStoreToTest =
+  | {
+      type: "in-memory";
+      store: AccountEventStore;
+    }
+  | {
+      type: "postgres";
+      store: AccountPGEventStore;
+    };
+
+const storesToTest: EventStoreToTest[] = [
+  { type: "in-memory", store: new AccountEventStore() },
+  { type: "postgres", store: pgEventStore },
+];
+
+describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
+  describe(`With a ${storeToTest.type} AccountEventStore`, () => {
+    beforeAll(async () => {
+      if (storeToTest.type === "postgres") {
+        await storeToTest.store.initTable();
+      }
     });
 
-    const events = await accountEventStore.getEventsFromSequenceNumber({
-      entityId: accountId,
-      sequenceNumber: 0,
+    afterAll(async () => {
+      if (storeToTest.type === "postgres") {
+        await storeToTest.store.stop();
+      }
     });
 
-    expect(events.events.length).toStrictEqual(1);
-    expect(events.events[0]).toStrictEqual({
-      name: "AccountCreated",
-      payload: {
-        accountId: "123",
-        status: "OPEN",
-        currency: "EUR",
-        balance: 0,
-      },
-    });
-    expect(events.lastEventSequenceNumber).toStrictEqual(1);
-  });
-});
+    test("Open an account ", async () => {
+      const accountId = randomUUID();
+      const accountEventStore = storeToTest.store;
 
-describe("Component Account", () => {
-  test("Credit then debit an account ", async () => {
-    const accountEventStore = new AccountEventStore();
-    const accountId = "123";
+      const account = new Account();
+      const accountCreatedEvent = account.open({ accountId });
 
-    const accountCreatedEvent = new Account().open({ accountId });
-    await accountEventStore.append({
-      entityId: accountId,
-      events: [accountCreatedEvent],
-    });
+      await accountEventStore.append({
+        entityId: accountId,
+        events: [accountCreatedEvent],
+      });
 
-    const accountEvents = await accountEventStore.getEventsFromSequenceNumber({
-      entityId: accountId,
-      sequenceNumber: 0,
-    });
-
-    expect(accountEvents.events.length).toStrictEqual(1);
-    expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
-
-    const accountState = new AccountReducer().reduceEvents({
-      state: Account.initialState(),
-      stateVersion: 0,
-      events: accountEvents.events,
-    });
-
-    const account = new Account({
-      state: accountState.state,
-      version: accountState.version,
-    });
-
-    const creditEvent = account.credit({
-      amount: 123,
-      currency: "EUR",
-    });
-
-    expect(account.getState()).toStrictEqual({
-      accountId: "123",
-      balance: 123,
-      currency: "EUR",
-      status: "OPEN",
-    });
-
-    const debitEvent = account.debit({
-      amount: 13,
-      currency: "EUR",
-    });
-
-    expect(account.getState()).toStrictEqual({
-      accountId: "123",
-      balance: 110,
-      currency: "EUR",
-      status: "OPEN",
-    });
-
-    await accountEventStore.append({
-      entityId: accountId,
-      events: [creditEvent, debitEvent],
-    });
-
-    const accountEventList =
-      await accountEventStore.getEventsFromSequenceNumber({
+      const events = await accountEventStore.getEventsFromSequenceNumber({
         entityId: accountId,
         sequenceNumber: 0,
       });
 
-    expect(accountEventList.events.length).toStrictEqual(3);
-    expect(accountEventList.events.map((event) => event.name)).toStrictEqual([
-      "AccountCreated",
-      "AccountCredited",
-      "AccountDebited",
-    ]);
-
-    expect(accountEventList.lastEventSequenceNumber).toStrictEqual(3);
-
-    const newState = new AccountReducer().reduceEvents({
-      events: accountEventList.events,
-      state: Account.initialState(),
-      stateVersion: 0,
+      expect(events.events.length).toStrictEqual(1);
+      expect(events.events[0]).toStrictEqual({
+        name: "AccountCreated",
+        payload: {
+          accountId,
+          status: "OPEN",
+          currency: "EUR",
+          balance: 0,
+        },
+      });
+      expect(events.lastEventSequenceNumber).toStrictEqual(1);
     });
 
-    expect(newState.state).toStrictEqual(account.getState());
-  });
-});
+    test("Credit then debit an account ", async () => {
+      const accountId = randomUUID();
+      const accountEventStore = storeToTest.store;
 
-describe("Component Account", () => {
-  test("Detect concurrency", async () => {
-    const accountEventStore = new AccountEventStore();
-    const accountId = "123";
+      const accountCreatedEvent = new Account().open({ accountId });
+      await accountEventStore.append({
+        entityId: accountId,
+        events: [accountCreatedEvent],
+      });
 
-    const accountCreatedEvent = new Account().open({ accountId });
-    await accountEventStore.append({
-      entityId: accountId,
-      events: [accountCreatedEvent],
+      const accountEvents = await accountEventStore.getEventsFromSequenceNumber(
+        {
+          entityId: accountId,
+          sequenceNumber: 0,
+        },
+      );
+
+      expect(accountEvents.events.length).toStrictEqual(1);
+      expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
+
+      const accountState = new AccountReducer().reduceEvents({
+        state: Account.initialState(),
+        stateVersion: 0,
+        events: accountEvents.events,
+      });
+
+      const account = new Account({
+        state: accountState.state,
+        version: accountState.version,
+      });
+
+      const creditEvent = account.credit({
+        amount: 123,
+        currency: "EUR",
+      });
+
+      expect(account.getState()).toStrictEqual({
+        accountId: accountId,
+        balance: 123,
+        currency: "EUR",
+        status: "OPEN",
+      });
+
+      const debitEvent = account.debit({
+        amount: 13,
+        currency: "EUR",
+      });
+
+      expect(account.getState()).toStrictEqual({
+        accountId: accountId,
+        balance: 110,
+        currency: "EUR",
+        status: "OPEN",
+      });
+
+      await accountEventStore.append({
+        entityId: accountId,
+        events: [creditEvent, debitEvent],
+      });
+
+      const accountEventList =
+        await accountEventStore.getEventsFromSequenceNumber({
+          entityId: accountId,
+          sequenceNumber: 0,
+        });
+
+      expect(accountEventList.events.length).toStrictEqual(3);
+      expect(accountEventList.events.map((event) => event.name)).toStrictEqual([
+        "AccountCreated",
+        "AccountCredited",
+        "AccountDebited",
+      ]);
+
+      expect(accountEventList.lastEventSequenceNumber).toStrictEqual(3);
+
+      const newState = new AccountReducer().reduceEvents({
+        events: accountEventList.events,
+        state: Account.initialState(),
+        stateVersion: 0,
+      });
+
+      expect(newState.state).toStrictEqual(account.getState());
     });
 
-    const accountEvents = await accountEventStore.getEventsFromSequenceNumber({
-      entityId: accountId,
-    });
+    test("Detect concurrency", async () => {
+      const accountId = randomUUID();
+      const accountEventStore = storeToTest.store;
 
-    expect(accountEvents.events.length).toStrictEqual(1);
-    expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
+      const accountCreatedEvent = new Account().open({ accountId });
+      await accountEventStore.append({
+        entityId: accountId,
+        events: [accountCreatedEvent],
+      });
 
-    const accountState = new AccountReducer().reduceEvents({
-      events: accountEvents.events,
-      state: Account.initialState(),
-      stateVersion: 0,
-    });
+      const accountEvents = await accountEventStore.getEventsFromSequenceNumber(
+        {
+          entityId: accountId,
+        },
+      );
 
-    const account = new Account(accountState);
-    const accountInParalllel = new Account(accountState);
+      expect(accountEvents.events.length).toStrictEqual(1);
+      expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
 
-    const creditEvent = account.credit({
-      amount: 123,
-      currency: "EUR",
-    });
+      const accountState = new AccountReducer().reduceEvents({
+        events: accountEvents.events,
+        state: Account.initialState(),
+        stateVersion: 0,
+      });
 
-    const creditEventInParallel = accountInParalllel.credit({
-      amount: 12,
-      currency: "EUR",
-    });
+      const account = new Account(accountState);
+      const accountInParalllel = new Account(accountState);
 
-    await accountEventStore.append(
-      { entityId: accountId, events: [creditEvent] },
-      {
-        appendAfterSequenceNumber: 1,
-      },
-    );
+      const creditEvent = account.credit({
+        amount: 123,
+        currency: "EUR",
+      });
 
-    await expect(
-      accountEventStore.append(
-        { entityId: accountId, events: [creditEventInParallel] },
+      const creditEventInParallel = accountInParalllel.credit({
+        amount: 12,
+        currency: "EUR",
+      });
+
+      await accountEventStore.append(
+        { entityId: accountId, events: [creditEvent] },
         {
           appendAfterSequenceNumber: 1,
         },
-      ),
-    ).rejects.toThrow("Concurrency error");
+      );
+
+      await expect(
+        accountEventStore.append(
+          { entityId: accountId, events: [creditEventInParallel] },
+          {
+            appendAfterSequenceNumber: 1,
+          },
+        ),
+      ).rejects.toThrow(
+        "Wrong sequence error: event must be appended with a continuous sequence number 1",
+      );
+    });
   });
 });
 
@@ -182,7 +223,7 @@ describe("Component AccountSnapshotStore", () => {
   const accountSnapshotStore = new AccountSnapshotStore();
 
   test("Store and retrieve snapshots", async () => {
-    const accountId = "1234";
+    const accountId = randomUUID();
     const accountCreatedEvent: AccountCreated = {
       name: "AccountCreated",
       payload: {

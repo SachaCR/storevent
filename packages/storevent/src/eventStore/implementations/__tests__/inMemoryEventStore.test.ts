@@ -147,7 +147,9 @@ describe("Component InMemoryEventStore", () => {
                 appendAfterSequenceNumber: 2,
               },
             ),
-          ).rejects.toThrow("Concurrency error");
+          ).rejects.toThrow(
+            "Wrong sequence error: event must be appended with a continuous sequence number 2",
+          );
         });
       });
     });

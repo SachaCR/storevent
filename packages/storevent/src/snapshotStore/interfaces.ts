@@ -5,19 +5,12 @@ export interface SnapshotData<State extends JsonSerializable> {
   version: number;
 }
 
-export interface SaveSnapshotOptions {
-  writeMode?: "APPEND" | "COMPACT" | "OVERWRITE_LAST";
-}
-
 export interface SnapshotStore<State extends JsonSerializable> {
-  saveSnapshot(
-    params: {
-      entityId: string;
-      snapshot: State;
-      version: number;
-    },
-    options?: SaveSnapshotOptions,
-  ): Promise<void>;
+  saveSnapshot(params: {
+    entityId: string;
+    snapshot: State;
+    version: number;
+  }): Promise<void>;
 
   getLastSnapshot(entityId: string): Promise<SnapshotData<State>>;
 

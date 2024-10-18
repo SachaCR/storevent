@@ -3,7 +3,8 @@
   "tasks": {
     "test": {
       "inputs": [
-        "src/**"
+        "src/**",
+        "config/**"
       ],
       "outputs": [
         "docs/coverage",

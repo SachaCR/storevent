@@ -38,14 +38,11 @@ export class InMemoryHybridStore<
     );
 
     if (snapshot) {
-      await this.#snapshotStore.saveSnapshot(
-        {
-          entityId,
-          snapshot: snapshot.state,
-          version: snapshot.version,
-        },
-        { writeMode: options?.writeMode },
-      );
+      await this.#snapshotStore.saveSnapshot({
+        entityId,
+        snapshot: snapshot.state,
+        version: snapshot.version,
+      });
     }
 
     return Promise.resolve();
@@ -69,10 +66,11 @@ export class InMemoryHybridStore<
     return this.#snapshotStore.getSnapshot(params);
   }
 
-  saveSnapshot(
-    params: { entityId: string; snapshot: State; version: number },
-    options?: { writeMode?: "APPEND" | "COMPACT" | "OVERWRITE_LAST" },
-  ): Promise<void> {
-    return this.#snapshotStore.saveSnapshot(params, options);
+  saveSnapshot(params: {
+    entityId: string;
+    snapshot: State;
+    version: number;
+  }): Promise<void> {
+    return this.#snapshotStore.saveSnapshot(params);
   }
 }

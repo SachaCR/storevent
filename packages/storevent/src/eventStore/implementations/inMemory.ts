@@ -1,4 +1,4 @@
-import { ConcurrencyError } from "../../errors";
+import { WrongSequenceError } from "../../errors";
 import { Storevent } from "../../interfaces";
 import { AppendEventOptions, EventStore } from "../interfaces";
 
@@ -32,10 +32,10 @@ export class InMemoryEventStore<Event extends Storevent>
 
       if (options.appendAfterSequenceNumber !== lastEntitySequence) {
         return Promise.reject(
-          new ConcurrencyError({
+          new WrongSequenceError({
             entityId,
             entityName: this.#entityName,
-            sequenceInConflict: options.appendAfterSequenceNumber,
+            invalidSequence: options.appendAfterSequenceNumber,
           }),
         );
       }

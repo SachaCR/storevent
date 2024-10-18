@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build",
-    "test": "npm run test --ws",
-    "fix": "npm run fix --ws",
-    "lint": "npm run lint --ws",
-    "check-type": "npm run check-type --workspace=packages/",
-    "build": "BUILD_DIR=$PWD/builds npm run build --ws"
+    "all": "turbo test fix lint check-type build",
+    "test": "turbo test",
+    "fix": "turbo fix",
+    "lint": "turbo lint",
+    "check-type": "turbo check-type",
+    "build": "BUILD_DIR=$PWD/builds turbo build"
   },
   "license": "MIT",
   "repository": {
