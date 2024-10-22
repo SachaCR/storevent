@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     container: node:20-bookworm-slim
 
+    env:
+      NODE_ENV: ci
+      CI: true
+
     services:
       postgres:
         image: postgres
@@ -39,15 +43,17 @@ jobs:
         with:
           node-version: 20.18.0
 
+
+
       - name: Install dependencies
         run: |
           node --version
           npm --version
           npm install
 
+
+
       - name: Run all tasks
         run: npm run all
 
-        env:
-          NODE_ENV: ci
-          CI: true
+
