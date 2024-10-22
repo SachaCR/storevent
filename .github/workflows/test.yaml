@@ -3,10 +3,6 @@ name: test
 on:
   push:
 
-env:
-  NODE_ENV: ci
-  CI: true
-
 jobs:
 
   test:
