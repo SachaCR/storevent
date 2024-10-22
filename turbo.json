@@ -7,8 +7,7 @@
         "config/**"
       ],
       "outputs": [
-        "docs/coverage",
-        "test-reports"
+        "docs/**"
       ],
       "dependsOn": [
         "^test"
@@ -32,11 +31,13 @@
         "dist/**"
       ],
       "dependsOn": [
-        "check-type",
         "^build"
       ]
     },
     "check-type": {
+      "inputs": [
+        "src/**"
+      ],
       "dependsOn": [
         "^check-type"
       ]

@@ -2,7 +2,6 @@
   "name": "storevent",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "all": "turbo test fix lint check-type build",
     "test": "turbo test",
