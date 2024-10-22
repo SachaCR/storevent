@@ -50,8 +50,6 @@ jobs:
           npm ci
 
       - name: Run all tasks
-        env:
-          NODE_ENV: ci
-        run: npm run all
+        run: NODE_ENV=ci npm run all
 
 
