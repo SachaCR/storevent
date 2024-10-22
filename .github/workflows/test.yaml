@@ -43,15 +43,11 @@ jobs:
         with:
           node-version: 20.18.0
 
-
-
       - name: Install dependencies
         run: |
           node --version
           npm --version
           npm install
-
-
 
       - name: Run all tasks
         run: npm run all
