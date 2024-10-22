@@ -3,15 +3,15 @@ name: test
 on:
   push:
 
+env:
+  NODE_ENV: ci
+  CI: true
+
 jobs:
 
   test:
     runs-on: ubuntu-latest
     container: node:20-bookworm-slim
-
-    env:
-      NODE_ENV: ci
-      CI: true
 
     services:
       postgres:
