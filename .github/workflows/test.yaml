@@ -3,6 +3,9 @@ name: test
 on:
   push:
 
+env:
+  NODE_ENV: ci
+
 jobs:
 
   test:
@@ -46,6 +49,6 @@ jobs:
           npm ci
 
       - name: Run all tasks
-        run: npm run ci
+        run: npm run all
 
 
