@@ -47,9 +47,11 @@ jobs:
         run: |
           node --version
           npm --version
-          npm install
+          npm ci
 
       - name: Run all tasks
+        env:
+          NODE_ENV: ci
         run: npm run all
 
 
