@@ -4,7 +4,7 @@ import {
   TestEvent,
   TestState,
 } from "../../../__tests__/testEvents";
-import { InMemoryHybridStore } from "../inMemory";
+import { InMemoryHybridStore } from "../../";
 
 describe("Component InMemoryHybridStore", () => {
   describe("Given a hybrid store", () => {

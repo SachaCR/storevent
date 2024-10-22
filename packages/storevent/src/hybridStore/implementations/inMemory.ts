@@ -1,11 +1,7 @@
 import { InMemoryEventStore } from "../../eventStore";
 import { JsonSerializable, Storevent } from "../../interfaces";
 import { InMemorySnapshotStore, SnapshotData } from "../../snapshotStore";
-import {
-  HybridAppendParams,
-  AppendHybridEventOptions,
-  HybridStore,
-} from "../interfaces";
+import { HybridAppendParams, AppendHybridEventOptions, HybridStore } from "../";
 
 export class InMemoryHybridStore<
   Event extends Storevent,
