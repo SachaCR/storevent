@@ -8,7 +8,6 @@ It provides interfaces and concrete event store implementation for different dat
 - Postgres
 - Mongo DB: (Work in progress)
 
-
 # See an example here:
 
 https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account
