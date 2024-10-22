@@ -24,7 +24,6 @@ export class PGEventStore<Event extends Storevent>
     const { entityName, tableName } = configuration;
     this.#entityName = entityName;
     this.#tableName = tableName ?? `${entityName}_events`;
-    console.log(">>>>>>>>>>> configuration:", configuration);
     this.#pgPool = new Pool({
       host: configuration.database.host,
       database: configuration.database.name,
