@@ -2,7 +2,11 @@
   "name": "@storevent/storevent",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build",
     "build": "tsc",
