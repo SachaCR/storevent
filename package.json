@@ -8,7 +8,8 @@
     "fix": "turbo fix",
     "lint": "turbo lint",
     "check-type": "turbo check-type",
-    "build": "BUILD_DIR=$PWD/builds turbo build"
+    "build": "BUILD_DIR=$PWD/builds turbo build",
+    "prepare": "husky"
   },
   "license": "MIT",
   "repository": {
@@ -25,6 +26,9 @@
   ],
   "packageManager": "npm@10.8.2",
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.6",
     "jest": "^29.7.0",
     "turbo": "^2.1.3"
   },
