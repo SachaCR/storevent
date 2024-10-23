@@ -1,4 +1,4 @@
-name: Publish package
+nname: Publish package
 
 on:
   workflow_dispatch:
@@ -27,4 +27,4 @@ jobs:
 
       - name: Publish
         run: |
-          echo "Publishing: ${{ github.event.inputs.package }}@${{ github.event.inputs.package }}"
+          echo "Publishing package: ${{ github.event.inputs.package }}@${{ github.event.inputs.versionNumber }}"
