@@ -8,8 +8,8 @@ on:
         required: true
         default: '@storevent/storevent'
         options:
-          - '@storevent/storevent'
-          - '@storevent/storevent-pg'
+          - storevent
+          - storevent-pg
           
       versionNumber:
         description: 'Type version number'
