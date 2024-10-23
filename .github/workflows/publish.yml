@@ -6,7 +6,7 @@ on:
       package:
         description: 'Select a package'
         required: true
-        default: '@storevent/storevent'
+        default: storevent
         options:
           - storevent
           - storevent-pg
