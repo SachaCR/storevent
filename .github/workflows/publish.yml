@@ -60,3 +60,6 @@ jobs:
       - name: Publish ${{ github.event.inputs.package }} to NPM
         run: |
           npm publish --dry-run --workspace=${{ github.event.inputs.package }}
+
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
