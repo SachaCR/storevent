@@ -2,12 +2,63 @@
 
 Storevent is a framework that simplify event sourcing.
 
-It provides interfaces and concrete event store implementation for different database engines:
+The base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store.
 
-- In Memory: To be used in your tests
-- Postgres
-- Mongo DB: (Work in progress)
+Scondary concrete event store implementation for different database engines:
+
+- In Memory
+
+- `@storevent/storevent-pg`: Provide a very basic Postgres implementation (Work In Progress)
+
+- `@storevent/storevent-pg`: Provide a basic Mongo DB implementation (Not started yet)
 
 # See an example here:
 
 https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account
+
+## Event store
+```typescript
+import { InMemoryEventStore } from "@storevent/storevent";
+import { PGEventStore } from "@storevent/storevent-pg";
+
+import { AccountEvent } from "./interfaces";
+
+// In Memory store
+export class AccountEventStore extends InMemoryEventStore<AccountEvent> {
+  constructor() {
+    super("Account");
+  }
+}
+
+// Postgres store
+export class AccountPGEventStore extends PGEventStore<AccountEvent> {
+  constructor(configuration: {
+    database: {
+      host: string;
+      name: string;
+      password: string;
+      port: number;
+      user: string;
+    };
+  }) {
+    super({
+      database: configuration.database,
+      entityName: "Account",
+      tableName: "account_events",
+    });
+  }
+}
+```
+
+## Event Reducer
+```typescript
+export class AccountReducer extends EntityReducer<AccountState, AccountEvent> {
+  constructor() {
+    super("Account");
+
+    this.mountEventReducer("AccountCreated", applyAccountCreatedEvent);
+    this.mountEventReducer("AccountCredited", applyAccountCreditedEvent);
+    this.mountEventReducer("AccountDebited", applyAccountDebitedEvent);
+  }
+}
+```
