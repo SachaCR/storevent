@@ -55,11 +55,11 @@ jobs:
 
       - name: Update ${{ github.event.inputs.package }} version
         run: |
-          npm version ${{ github.event.inputs.releaseType }} --workspace=${{ github.event.inputs.package }}
+          npm version ${{ github.event.inputs.releaseType }} -m "build(publish): pubish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }} && git push --follow-tags
 
       - name: Publish ${{ github.event.inputs.package }} to NPM
         run: |
-          npm publish --dry-run --workspace=${{ github.event.inputs.package }}
+          npm publish --workspace=${{ github.event.inputs.package }}
 
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
