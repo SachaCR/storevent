@@ -11,20 +11,52 @@ on:
         options:
           - '@storevent/storevent'
           - '@storevent/storevent-pg'
-          
-      versionNumber:
-        type: text
-        description: 'Type version number'
+
+      releaseType:
+        description: 'Release type'
         required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Publish
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+
+      - name: Install dependencies
         run: |
-          echo "Publishing package: ${{ github.event.inputs.package }}@${{ github.event.inputs.versionNumber }}"
+          node --version
+          npm --version
+          npm ci
+
+      - name: Run all tasks for package ${{ github.event.inputs.package }}
+        run: npm run all -- --filter=${{ github.event.inputs.package }}
+
+      - name: Update ${{ github.event.inputs.package }} version
+        run: |
+          npm version ${{ github.event.inputs.releaseType }} --workspace=${{ github.event.inputs.package }}
+
+      - name: Publish ${{ github.event.inputs.package }} to NPM
+        run: |
+          npm publish --dry-run --workspace=${{ github.event.inputs.package }}
