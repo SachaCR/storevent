@@ -1,4 +1,4 @@
-nname: Publish package
+name: Publish package
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ on:
         required: true
 
 jobs:
-  run:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
