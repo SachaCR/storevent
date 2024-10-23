@@ -13,7 +13,8 @@
     "test": "jest --passWithNoTests --runInBand  --detectOpenHandles",
     "lint": "eslint . --ext .ts",
     "fix": "prettier src --write && eslint . --ext .ts --fix",
-    "check-type": "tsc --noEmit"
+    "check-type": "tsc --noEmit",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",

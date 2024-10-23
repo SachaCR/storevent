@@ -56,15 +56,17 @@ jobs:
         run: npm run all -- --filter=${{ github.event.inputs.package }}
 
       - name: Update ${{ github.event.inputs.package }} version
-        run: |
-          npm version ${{ github.event.inputs.releaseType }} -m "build(publish): publish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }}
-
-      - name: Push changes and tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A
-          git push --follow-tags
+          npm version ${{ github.event.inputs.releaseType }} -m "build(publish): publish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }}
+
+      # - name: Push changes and tags
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     git add -A
+      #     git push --follow-tags
 
       - name: Publish ${{ github.event.inputs.package }} to NPM
         env:
