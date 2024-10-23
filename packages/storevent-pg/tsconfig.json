@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "exclude" : ["dist", "node_modules", "**/__tests__/**/*"],
+  "exclude" : ["dist", "node_modules"],
   "compilerOptions": {
     "target": "ES2022",
     "module": "NodeNext",
