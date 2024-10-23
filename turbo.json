@@ -13,17 +13,24 @@
         "docs/**"
       ],
       "dependsOn": [
-        "^test"
+        "^test",
+        "^build"
       ]
     },
     "fix": {
       "inputs": [
         "src/**"
+      ],
+      "dependsOn": [
+        "^build"
       ]
     },
     "lint": {
       "inputs": [
         "src/**"
+      ],
+      "dependsOn": [
+        "^build"
       ]
     },
     "build": {
