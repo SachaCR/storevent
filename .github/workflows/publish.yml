@@ -60,14 +60,14 @@ jobs:
         run: |
           npm version ${{ github.event.inputs.releaseType }} -m "build(publish): pubish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }}
 
+      - name: Check Git version
+        run: git --version
+
       - name: Push changes and tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git push --follow-tags
-
-      - name: Check Git version
-        run: git --version
 
       - name: Publish ${{ github.event.inputs.package }} to NPM
         run: |
