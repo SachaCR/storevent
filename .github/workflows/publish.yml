@@ -4,14 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       package:
+        type: choice
         description: 'Select a package'
         required: true
-        default: storevent
+        default: '@storevent/storevent'
         options:
-          - storevent
-          - storevent-pg
+          - '@storevent/storevent'
+          - '@storevent/storevent-pg'
           
       versionNumber:
+        type: text
         description: 'Type version number'
         required: true
 
