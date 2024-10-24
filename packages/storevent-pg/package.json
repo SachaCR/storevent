@@ -27,7 +27,7 @@
     "sourcing"
   ],
   "dependencies": {
-    "@storevent/storevent": "*",
+    "@storevent/storevent": "^0.0.9",
     "pg": "^8.13.0",
     "pg-format": "^1.0.4"
   },
