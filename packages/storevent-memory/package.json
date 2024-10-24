@@ -1,8 +1,15 @@
 {
-  "name": "@storevent/examples",
+  "name": "@storevent/storevent-memory",
   "version": "0.0.1",
-  "description": "",
-  "main": "src/account/index.ts",
+  "description": "In memory implementation of Storevent interfaces",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build",
     "build": "tsc",
@@ -11,6 +18,7 @@
     "fix": "prettier src --write && eslint . --ext .ts --fix",
     "check-type": "tsc --noEmit"
   },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SachaCR/storevent.git"
@@ -19,7 +27,10 @@
   "bugs": {
     "url": "git+https://github.com/SachaCR/storevent.git"
   },
-  "license": "MIT",
+  "homepage": "https://github.com/SachaCR/storevent/blob/main/packages/storevent-memory/README.md",
+  "dependencies": {
+    "@storevent/storevent": "*"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.6",
@@ -32,11 +43,6 @@
     "prettier": "^3.2.4",
     "ts-jest": "^29.1.2",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "@storevent/storevent": "*",
-    "@storevent/storevent-pg": "*",
-    "@storevent/storevent-memory": "*"
   },
   "engines": {
     "node": "20.18.0",

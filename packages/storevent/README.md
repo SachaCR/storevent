@@ -1,30 +1,43 @@
 # Storevent
 
-Storevent is a framework that simplify event sourcing.
+Storevent is a framework that simplify event sourcing. It makes it easy to build an entity reducer to aggregate your events into a state.
 
-This base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store. It contains an basic `InMemoryEventStore` implementation that you can use in your unit tests.
+This package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store.
 
-# Example
+You can also decide to use a packages that provides an implementation for Postgres, MongoDB, etc.... See [Available Packages List](#available-implementations)
 
-You'll find an [example](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account) entity named `Account` with implementations for:
+# Examples
 
-- [event store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountEventStore.ts)
-- [snapshot store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountSnapshotStore.ts)
-- [hybrid store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountHybridStore.ts)
-- [entity reducer](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountReducer.ts)
-- [entity's events and state](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/interfaces.ts)
-- [entity concrete implementation](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/index.ts)
+Storevent provides examples that takes the case of an entity `Account` that represents a simple bank account. It can be created, credited with some money or debited. Each of these action produce an event: `AccountCreated`, `AccountCredited`, `AccountDebited`.
 
-## Declaring your events and state
+See [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+
+Example shows:
+- How to create your:
+  - Entity Events
+  - Entity State
+  - Entity Reducer that will calculate your entity state from your events.
+
+- How to use the In Memory implementation:
+  - event store
+  - snaphshot store
+  - hybrid store
+
+- How to use the Postgres implementation:
+  - event store
+  - snaphshot store
+  - hybrid store
+
+# Event
 
 To create your events you just need to extends the `Storevent` interface.
 
 ```typescript
-import { JsonSerializable, Storevent } from "@storevent/storevent";
+import { Storevent } from "@storevent/storevent";
 
-export type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
+type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
 
-export interface AccountCreated extends Storevent {
+interface AccountCreated extends Storevent {
   name: "AccountCreated";
   payload: {
     accountId: string;
@@ -34,23 +47,18 @@ export interface AccountCreated extends Storevent {
   };
 }
 
-export interface AccountCredited extends Storevent {
-  name: "AccountCredited";
-  payload: {
-    amount: number;
-    currency: string;
-  };
-}
+interface AccountCredited extends Storevent { ... }
+interface AccountDebited extends Storevent { ... }
+```
 
-export interface AccountDebited extends Storevent {
-  name: "AccountDebited";
-  payload: {
-    amount: number;
-    currency: string;
-  };
-}
+# Entity State
 
-export interface AccountState extends JsonSerializable {
+Your entity state just need to extends `JsonSerializable` type.
+
+```typescript
+import { JsonSerializable } from "@storevent/storevent";
+
+interface AccountState extends JsonSerializable {
   accountId: string;
   status: "VOID" | "OPEN";
   balance: number;
@@ -58,30 +66,17 @@ export interface AccountState extends JsonSerializable {
 }
 ```
 
-## Build an event store
+# Entity Reducer
+The entity reducer is the component that calculates the state of your entity. For this it takes an `initial state` and a list of `event` to apply on top of this state.
 
-All you have to do to create an event store is to extends the store of your choice (in memory, postgres, etc...) with your event type (here `AccountEvent`) and your entity name (`Account`).
+To create an entity reducer you just need to extends the `EntityReducer` class. Then mount your event reducers using the `mountEventReducer` method.
 
+
+## Reducer Declaration
 ```typescript
-import { InMemoryEventStore } from "@storevent/storevent";
-import { AccountEvent } from "./interfaces";
+import { AccountEvent, AccountState } from "../AccountEntity";
 
-export class AccountEventStore extends InMemoryEventStore<AccountEvent> {
-  constructor() {
-    super("Account");
-  }
-}
-```
-
-## Entity Reducer
-The event reducer is the component that calculates the state of your entity. For this it takes an `initial state` and a list of event to apply to this state.
-
-To create an entity reducer you just need to extends the `EntityReducer` class. Then mount your event reducers using `mountEventReducer`.
-
-```typescript
-import { AccountCredited, AccountState } from "../interfaces";
-
-export class AccountReducer extends EntityReducer<AccountState, AccountEvent> {
+class AccountReducer extends EntityReducer<AccountState, AccountEvent> {
   constructor() {
     super("Account");
 
@@ -110,14 +105,89 @@ function applyAccountDebitedEvent() { ... }
 function applyAccountCreatedEvent() { ... }
 ```
 
-## Snapshot store
+## Reducer usage
 
-Sometime you may want to store `snapshot` of your state to avoid reprocessing the ful list of event everytime. Storevent provides an interface `SnapshotStore` to help you achive this.
+```typescript
+const initialState = { ... }
+const events: AccountEvent[] = [ accountCreated, accountCredited, accountDebited, ...]
+const newState = new AccountReducer().reduceEvents({
+  state: initialState,
+  stateVersion: 0,
+  events,
+});
+```
 
-This section is not fully documented yet but you can still see an example [here](https://github.com/SachaCR/storevent/tree/main/packages/examples):
+# Event Store interface
 
-## Hybrid store
+The event store interface provides an interface to append new events in your event store and a method to retrieve your events.
 
-Sometime you may want to save your events and a snapshot in the same transaction. Storevent provides an interface `HybridStore` to help you achieve this.
+```typescript
+const accountEventStore = new AccountInMemoryEventStore()
 
-This section is not fully documented yet but you can still see an example [here](https://github.com/SachaCR/storevent/tree/main/packages/examples):
+await accountEventStore.append({
+  entityId: accountId,
+  events: [accountCreatedEvent],
+});
+
+const events = await accountEventStore.getEventsFromSequenceNumber({
+  entityId: accountId,
+});
+
+const events = await accountEventStore.getEventsFromSequenceNumber({
+  entityId: accountId,
+  sequenceNumber: 45, // optional default to 0
+});
+```
+
+# Snapshot Store interface
+
+Documentation in progress...
+
+In the meantime you can check this [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+
+# Hybrid Store interface
+
+Documentation in progress...
+
+In the meantime you can check this [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+
+# Storevent Error
+
+Storevent implementations will always try to throw a `StoreventError`.
+
+## Properties
+A `StoreventError` has the following properties:
+
+- `name`: equals to `StoreventError`.
+
+- `code`: Unique storevent error code.
+
+- `details`: Generic type that contains the error context. You can discriminate the type with the `error.code`.
+
+- `cause`: Original error object if the error is wrapped. Mostly used when the error comes from the underlying layer (postgres, mongo, etc...)
+
+## Concurrency Error
+
+Use this error in you implementation to prevent events from being appended concurrently for the same entity.
+
+## Wrong Sequence Error
+
+Use this error in you implementation when you detect incoherence event sequence.
+
+## Unknown Reducer Error
+
+This error is thrown when an `EntityReducer` cannot find a reducer for a given event type.
+
+# Available implementations
+
+- [@storevent/storevent-memory](https://github.com/SachaCR/storevent/tree/main/packages/storevent-memory): Provides a basic in memory implementation. Helpful  for your unit tests.
+
+- [@storevent/storevent-pg](https://github.com/SachaCR/storevent/tree/main/packages/storevent-pg): Provides a basic Postgres implementation. (work in progress)
+
+- [@storevent/storevent-mongo](): Provide a basic Mongo DB implementation. (Not started yet)
+
+# Implement a custom store
+
+You can implement your own event, snapshot and hybrid store. For this just implement `@storevent/storevent` interfaces.
+
+See [examples](#examples) section to see how in memory, postgres, mongodb implementation are made.

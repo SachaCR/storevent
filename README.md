@@ -2,16 +2,15 @@
 
 Storevent is a framework that simplify event sourcing. It provides different packages that helps you build your event store.
 
-[@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent): This packages provides interfaces that you can use to build custom implementations for your event store.
-It contains also a basic `in memory` implementation that you can use in your unit tests.
+The base package is [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent). It provides interfaces that you can use to build custom implementations for your event store.
 
-# Storevent Postgres (Work In Progress)
+# Documentation
 
-[@storevent/storevent-pg](https://github.com/SachaCR/storevent/tree/main/packages/storevent-pg): Provides a basic Postgres implementation.
+See [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent)
 
-# Storevent Mongo DB (To Do)
-`@storevent/storevent-mongo`: Provide a basic Mongo DB implementation (Not started yet)
+# Examples
 
+[Examples Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
 
 # Roadmap:
 

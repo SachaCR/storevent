@@ -1,4 +1,4 @@
-import { Storevent } from "../interfaces";
+import { Storevent } from "./interfaces";
 
 export interface AppendEventOptions {
   /**

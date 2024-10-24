@@ -1,6 +1,6 @@
-import { AppendEventOptions } from "../eventStore";
-import { JsonSerializable, Storevent } from "../interfaces";
-import { SnapshotData, SnapshotStore } from "../snapshotStore";
+import { AppendEventOptions } from "./eventStore";
+import { JsonSerializable, Storevent } from "./interfaces";
+import { SnapshotData, SnapshotStore } from "./snapshotStore";
 
 export type AppendHybridEventOptions = AppendEventOptions;
 

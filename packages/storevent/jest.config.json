@@ -3,6 +3,7 @@
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!**/node_modules/**",
+    "!**/__tests__/**",
     "!src/examples/**"
   ],
   "coverageReporters": [

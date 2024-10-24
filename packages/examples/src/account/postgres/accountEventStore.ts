@@ -1,13 +1,6 @@
-import { InMemoryEventStore } from "@storevent/storevent";
 import { PGEventStore } from "@storevent/storevent-pg";
 
-import { AccountEvent } from "./interfaces";
-
-export class AccountEventStore extends InMemoryEventStore<AccountEvent> {
-  constructor() {
-    super("Account");
-  }
-}
+import { AccountEvent } from "../interfaces";
 
 export class AccountPGEventStore extends PGEventStore<AccountEvent> {
   constructor(configuration: {

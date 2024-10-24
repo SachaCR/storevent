@@ -1,5 +1,8 @@
-import { JsonSerializable } from "../../interfaces";
-import { SnapshotData, SnapshotStore } from "../interfaces";
+import {
+  JsonSerializable,
+  SnapshotData,
+  SnapshotStore,
+} from "@storevent/storevent";
 
 export class InMemorySnapshotStore<State extends JsonSerializable>
   implements SnapshotStore<State>

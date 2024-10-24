@@ -1,0 +1,5 @@
+jest.config.js
+coverage
+node_modules
+build
+test-reports

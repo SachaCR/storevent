@@ -1,5 +1,7 @@
 import { JsonSerializable, Storevent } from "@storevent/storevent";
 
+export type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
+
 export interface AccountCreated extends Storevent {
   name: "AccountCreated";
   payload: {
@@ -25,8 +27,6 @@ export interface AccountDebited extends Storevent {
     currency: string;
   };
 }
-
-export type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
 
 export interface AccountState extends JsonSerializable {
   accountId: string;

@@ -1,6 +1,10 @@
-import { UnknownReducer } from "../../errors";
-import { JsonSerializable, Storevent } from "../../interfaces";
-import { EntityReducerInterface, EventReducer } from "../interfaces";
+import {
+  UnknownReducer,
+  JsonSerializable,
+  Storevent,
+  EntityReducerInterface,
+  EventReducer,
+} from "../../";
 
 export class EntityReducer<
   State extends JsonSerializable,

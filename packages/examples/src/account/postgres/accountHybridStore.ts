@@ -1,15 +1,5 @@
-import { InMemoryHybridStore } from "@storevent/storevent";
-import { AccountEvent, AccountState } from "./interfaces";
 import { PGHybridStore } from "@storevent/storevent-pg";
-
-export class AccountHybridStore extends InMemoryHybridStore<
-  AccountEvent,
-  AccountState
-> {
-  constructor() {
-    super("Account");
-  }
-}
+import { AccountEvent, AccountState } from "../interfaces";
 
 export class AccountPGHybridStore extends PGHybridStore<
   AccountEvent,

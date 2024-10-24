@@ -1,16 +1,17 @@
 import config from "config";
+import { randomUUID } from "crypto";
+
 import { PGEventStoreConfiguration } from "@storevent/storevent-pg";
 
-import {
-  Account,
-  AccountEventStore,
-  AccountHybridStore,
-  AccountPGEventStore,
-  AccountSnapshotStore,
-} from "..";
+import { Account } from "..";
 import { AccountReducer } from "../accountReducer";
 import { AccountCreated, AccountCredited, AccountDebited } from "..";
-import { randomUUID } from "crypto";
+
+import { AccountInMemoryEventStore } from "../in-memory/accountEventStore";
+import { AccountInMemorySnapshotStore } from "../in-memory/accountSnapshotStore";
+import { AccountInMemoryHybridStore } from "../in-memory/accountHybridStore";
+
+import { AccountPGEventStore } from "../postgres/accountEventStore";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
@@ -20,7 +21,7 @@ const pgEventStore = new AccountPGEventStore({ database: DATABASE_CONFIG });
 type EventStoreToTest =
   | {
       type: "in-memory";
-      store: AccountEventStore;
+      store: AccountInMemoryEventStore;
     }
   | {
       type: "postgres";
@@ -28,7 +29,7 @@ type EventStoreToTest =
     };
 
 const storesToTest: EventStoreToTest[] = [
-  { type: "in-memory", store: new AccountEventStore() },
+  { type: "in-memory", store: new AccountInMemoryEventStore() },
   { type: "postgres", store: pgEventStore },
 ];
 
@@ -220,7 +221,7 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
 });
 
 describe("Component AccountSnapshotStore", () => {
-  const accountSnapshotStore = new AccountSnapshotStore();
+  const accountSnapshotStore = new AccountInMemorySnapshotStore();
 
   test("Store and retrieve snapshots", async () => {
     const accountId = randomUUID();
@@ -297,7 +298,7 @@ describe("Component AccountSnapshotStore", () => {
 });
 
 describe("Component AccountHybridStore", () => {
-  const accountSnapshotStore = new AccountHybridStore();
+  const accountSnapshotStore = new AccountInMemoryHybridStore();
 
   test("Store and retrieve snapshots", async () => {
     const accountId = "1234";

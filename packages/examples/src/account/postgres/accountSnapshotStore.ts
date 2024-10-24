@@ -1,9 +1,5 @@
-import { InMemorySnapshotStore } from "@storevent/storevent";
-
-import { AccountState } from "./interfaces";
 import { PGSnapshotStore } from "@storevent/storevent-pg";
-
-export class AccountSnapshotStore extends InMemorySnapshotStore<AccountState> {}
+import { AccountState } from "../interfaces";
 
 export class AccountPGSnapshotStore extends PGSnapshotStore<AccountState> {
   constructor(configuration: {

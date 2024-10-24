@@ -1,6 +1,9 @@
-import { WrongSequenceError } from "../../errors";
-import { Storevent } from "../../interfaces";
-import { AppendEventOptions, EventStore } from "../interfaces";
+import {
+  AppendEventOptions,
+  EventStore,
+  Storevent,
+  WrongSequenceError,
+} from "@storevent/storevent";
 
 export class InMemoryEventStore<Event extends Storevent>
   implements EventStore<Event>

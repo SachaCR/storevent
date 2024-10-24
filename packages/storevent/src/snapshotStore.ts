@@ -1,4 +1,4 @@
-import { JsonSerializable } from "../interfaces";
+import { JsonSerializable } from "./interfaces";
 
 export interface SnapshotData<State extends JsonSerializable> {
   state: State;

@@ -1,5 +1,5 @@
-import { InMemoryEventStore } from "../../../";
-import { buildTestEvent, TestEvent } from "../../../__tests__/testEvents";
+import { InMemoryEventStore } from "../";
+import { buildTestEvent, TestEvent } from "./testEvents";
 
 describe("Component InMemoryEventStore", () => {
   describe("Given some events", () => {
