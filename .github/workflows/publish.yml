@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: 20.18.0
           registry-url: "https://registry.npmjs.org"
-          scope: "@storevent"
+          scope: "storevent"
 
       - name: Install dependencies
         run: |
