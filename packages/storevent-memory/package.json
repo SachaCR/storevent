@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/SachaCR/storevent/blob/main/packages/storevent-memory/README.md",
   "dependencies": {
-    "@storevent/storevent": "^0.0.9"
+    "@storevent/storevent": "*"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

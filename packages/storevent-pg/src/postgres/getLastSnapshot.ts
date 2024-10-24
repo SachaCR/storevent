@@ -7,7 +7,7 @@ export async function getLastSnapshot<State extends JsonSerializable>(params: {
   entityId: string;
   tableName: string;
   client: PoolClient | Pool | Client;
-}): Promise<SnapshotData<State>> {
+}): Promise<SnapshotData<State> | undefined> {
   const { entityId, client, tableName } = params;
 
   const sanitizedCountQuery = format.default(
@@ -17,6 +17,10 @@ export async function getLastSnapshot<State extends JsonSerializable>(params: {
   );
 
   const result = await client.query<SnapshotFromDB>(sanitizedCountQuery);
+
+  if (result.rows.length === 0) {
+    return;
+  }
 
   const snapshotData: SnapshotData<State> = {
     state: result.rows[0].state as State,

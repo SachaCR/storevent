@@ -12,7 +12,7 @@ export interface SnapshotStore<State extends JsonSerializable> {
     version: number;
   }): Promise<void>;
 
-  getLastSnapshot(entityId: string): Promise<SnapshotData<State>>;
+  getLastSnapshot(entityId: string): Promise<SnapshotData<State> | undefined>;
 
   getSnapshot(params: {
     entityId: string;

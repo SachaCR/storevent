@@ -3,21 +3,21 @@ import { Client } from "pg";
 
 import { WrongSequenceError } from "@storevent/storevent";
 
-import { PGEventStore } from "..";
-import { clearDatabase } from "./clearDatabase";
-import { PGEventStoreConfiguration } from "../eventStore/interfaces";
+import { PGHybridStore } from "../..";
+import { clearDatabase } from "../clearDatabase";
+import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 
 const DATABASE_CONFIG =
-  config.get<PGEventStoreConfiguration["database"]>("database");
+  config.get<PGHybridStoreConfiguration["database"]>("database");
 
-describe("Component PGEventStore.append()", () => {
+describe("Component PGHybridStore.append()", () => {
   beforeAll(async () => {
-    const myPGEventStore = new PGEventStore({
+    const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
-    await myPGEventStore.initTable();
-    await myPGEventStore.stop();
+    await myPGHybridStore.initTable();
+    await myPGHybridStore.stop();
     await clearDatabase();
   });
 
@@ -40,7 +40,7 @@ describe("Component PGEventStore.append()", () => {
       ];
 
       test("Then it successfully insert the events", async () => {
-        const myPGEventStore = new PGEventStore({
+        const myPGHybridStore = new PGHybridStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
@@ -54,9 +54,9 @@ describe("Component PGEventStore.append()", () => {
         });
 
         try {
-          await myPGEventStore.initTable();
+          await myPGHybridStore.initTable();
 
-          await myPGEventStore.append({
+          await myPGHybridStore.append({
             entityId,
             events: eventsToAppend,
           });
@@ -93,7 +93,7 @@ describe("Component PGEventStore.append()", () => {
             appended_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGEventStore.stop();
+          await myPGHybridStore.stop();
           await client.end();
         }
       });
@@ -102,14 +102,14 @@ describe("Component PGEventStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGEventStore = new PGEventStore({
+    const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGEventStore.initTable();
-      await myPGEventStore.append({
+      await myPGHybridStore.initTable();
+      await myPGHybridStore.append({
         entityId,
         events: [
           {
@@ -150,7 +150,7 @@ describe("Component PGEventStore.append()", () => {
         });
 
         try {
-          await myPGEventStore.append(
+          await myPGHybridStore.append(
             {
               entityId,
               events: newEventsToAppend,
@@ -206,7 +206,7 @@ describe("Component PGEventStore.append()", () => {
             appended_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGEventStore.stop();
+          await myPGHybridStore.stop();
           await client.end();
         }
       });
@@ -215,14 +215,14 @@ describe("Component PGEventStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGEventStore = new PGEventStore({
+    const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGEventStore.initTable();
-      await myPGEventStore.append({
+      await myPGHybridStore.initTable();
+      await myPGHybridStore.append({
         entityId,
         events: [
           {
@@ -257,7 +257,7 @@ describe("Component PGEventStore.append()", () => {
         let error;
 
         try {
-          await myPGEventStore.append(
+          await myPGHybridStore.append(
             {
               entityId,
               events: newEventsToAppend,
@@ -280,7 +280,7 @@ describe("Component PGEventStore.append()", () => {
             expect(err.details?.invalidSequence).toStrictEqual(56);
           }
         } finally {
-          await myPGEventStore.stop();
+          await myPGHybridStore.stop();
         }
 
         expect(error).toBeDefined();
@@ -290,14 +290,14 @@ describe("Component PGEventStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGEventStore = new PGEventStore({
+    const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGEventStore.initTable();
-      await myPGEventStore.append({
+      await myPGHybridStore.initTable();
+      await myPGHybridStore.append({
         entityId,
         events: [
           {
@@ -333,7 +333,7 @@ describe("Component PGEventStore.append()", () => {
         let error;
 
         try {
-          await myPGEventStore.append(
+          await myPGHybridStore.append(
             {
               entityId,
               events: newEventsToAppend,
@@ -355,7 +355,7 @@ describe("Component PGEventStore.append()", () => {
             expect(err.details?.invalidSequence).toStrictEqual(2);
           }
         } finally {
-          await myPGEventStore.stop();
+          await myPGHybridStore.stop();
         }
 
         expect(error).toBeDefined();

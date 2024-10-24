@@ -1,5 +1,7 @@
 # Storevent Example
 
+![test](https://github.com/SachaCR/dyal/actions/workflows/test.yml/badge.svg)
+
 This package is just a collection of examples to help you understand how you can use and leverage `storevent` packages to build your event sourcing.
 
 The first example simulate a basic bank account entity that emits 3 different events:  `AccountCreated`, `AccountCredited`, `AccountDebited`.

@@ -9,14 +9,40 @@ export async function saveSnapshot<State extends JsonSerializable>(params: {
   version: number;
   tableName: string;
   client: PoolClient | Pool | Client;
+  writeMode: "APPEND" | "REPLACE";
 }): Promise<void> {
   const { entityId, client, tableName, version } = params;
 
-  const sanitizedQuery = format.default(
-    "INSERT INTO %I (entity_id, version, state) VALUES %L",
+  if (params.writeMode === "REPLACE") {
+    const sanitizedUpdateQuery = format.default(
+      `
+        UPDATE %I
+        SET
+          version = %L,
+          state = %L
+        WHERE entity_id = %L
+      `,
+      tableName,
+      version,
+      JSON.stringify(params.snapshot),
+      entityId,
+    );
+
+    const res = await client.query<SnapshotFromDB>(sanitizedUpdateQuery);
+
+    if (res.rowCount !== null && res.rowCount > 0) {
+      return;
+    }
+  }
+
+  const sanitizedInsertQuery = format.default(
+    `
+        INSERT INTO %I (entity_id, version, state)
+        VALUES %L
+      `,
     tableName,
-    [entityId, version, JSON.stringify(params.snapshot)],
+    [[entityId, version, JSON.stringify(params.snapshot)]],
   );
 
-  await client.query<SnapshotFromDB>(sanitizedQuery);
+  await client.query<SnapshotFromDB>(sanitizedInsertQuery);
 }

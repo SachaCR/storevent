@@ -11,14 +11,20 @@ import { getLastSnapshot } from "../postgres/getLastSnapshot";
 import { getSnapshot } from "../postgres/getSnapshot";
 import { saveSnapshot } from "../postgres/saveSnapshot";
 
+export interface PGSnapshotStoreConfiguration
+  extends PGEventStoreConfiguration {
+  writeMode?: "APPEND" | "REPLACE";
+}
+
 export class PGSnapshotStore<State extends JsonSerializable>
   implements SnapshotStore<State>
 {
   #entityName: string;
   #tableName: string;
   #pgPool: Pool;
+  #writeMode: "APPEND" | "REPLACE";
 
-  constructor(configuration: PGEventStoreConfiguration) {
+  constructor(configuration: PGSnapshotStoreConfiguration) {
     const { entityName, tableName } = configuration;
     this.#entityName = entityName;
     this.#tableName = tableName ?? `${entityName}_snapshots`;
@@ -29,6 +35,7 @@ export class PGSnapshotStore<State extends JsonSerializable>
       password: configuration.database.password,
       user: configuration.database.user,
     });
+    this.#writeMode = configuration.writeMode ?? "APPEND";
   }
 
   get entityName(): string {
@@ -53,7 +60,9 @@ export class PGSnapshotStore<State extends JsonSerializable>
     }
   }
 
-  async getLastSnapshot(entityId: string): Promise<SnapshotData<State>> {
+  async getLastSnapshot(
+    entityId: string,
+  ): Promise<SnapshotData<State> | undefined> {
     try {
       return await getLastSnapshot({
         client: this.#pgPool,
@@ -77,6 +86,7 @@ export class PGSnapshotStore<State extends JsonSerializable>
         version: params.version,
         tableName: this.#tableName,
         client: this.#pgPool,
+        writeMode: this.#writeMode,
       });
     } catch (err) {
       throw wrapError(err);
