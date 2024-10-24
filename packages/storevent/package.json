@@ -1,6 +1,6 @@
 {
   "name": "@storevent/storevent",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Storevent is a framework that simplify event sourcing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
