@@ -1,13 +1,12 @@
-- # Storevent
+# Storevent
 
 Storevent is a framework that simplify event sourcing.
 
 This base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store. It contains an basic `InMemoryEventStore` implementation that you can use in your unit tests.
 
-# See full example here:
-https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account
+# Example
 
-You'll find an example entity named `Account` with implementations for:
+You'll find an [example](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account) entity named `Account` with implementations for:
 
 - [event store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutEventStore.ts)
 - [snapshot store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutSnapshotStore.ts)
