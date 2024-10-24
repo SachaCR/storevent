@@ -1,8 +1,5 @@
 name: Publish package
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
     inputs:
@@ -34,7 +31,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           set-safe-directory: $GITHUB_WORKSPACE
-          fetch-depth: 0
 
       - name: Git setup
         run: |
@@ -66,15 +62,11 @@ jobs:
       - name: Update ${{ github.event.inputs.package }} version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Create a fake .git folder to allow npm version to create the commit and tag
+          # NPM bug here: npm version will not create commit or tag if package is in a subdorectory.
+          # Create a fake .git in sub folder to allow npm version to create the commit and tag
         run: |
           mkdir ./packages/storevent/.git
           npm version ${{ github.event.inputs.releaseType }} -m "ci(publish): bump ${{ github.event.inputs.package }} version to %s" --workspace=${{ github.event.inputs.package }}
-
-      - name: Debug
-        run: |
-          git status
-          git tag -l
 
       - name: Push changes and tags
         env:
@@ -82,18 +74,6 @@ jobs:
         run: |
           git add .
           git push --follow-tags
-
-      # - name: Push changes and tags
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     git add -A
-      #     git commit -m "build(publish): publish ${{ github.event.inputs.releaseType }} version for ${{ github.event.inputs.package }}"
-      #     git push --follow-tags
-
-      - name: Debug
-        run: |
-          git status
 
       # - name: Publish ${{ github.event.inputs.package }} to NPM
       #   env:
