@@ -83,6 +83,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm publish --workspace=@storevent/${{ github.event.inputs.package }}
+          npm publish --access public --workspace=@storevent/${{ github.event.inputs.package }}
 
 
