@@ -1,26 +1,26 @@
 import config from "config";
-import { PGEventStore } from "..";
-import { clearDatabase } from "./clearDatabase";
-import { PGEventStoreConfiguration } from "../eventStore/interfaces";
+import { PGHybridStore } from "../..";
+import { clearDatabase } from "../clearDatabase";
+import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 
 const DATABASE_CONFIG =
-  config.get<PGEventStoreConfiguration["database"]>("database");
+  config.get<PGHybridStoreConfiguration["database"]>("database");
 
-describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
+describe("Component PGHybridStore.getEventsFromSequenceNumber()", () => {
   beforeAll(async () => {
     await clearDatabase();
   });
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGEventStore = new PGEventStore({
+    const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGEventStore.initTable();
-      await myPGEventStore.append({
+      await myPGHybridStore.initTable();
+      await myPGHybridStore.append({
         entityId,
         events: [
           {
@@ -40,12 +40,12 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
     });
 
     afterAll(async () => {
-      await myPGEventStore.stop();
+      await myPGHybridStore.stop();
     });
 
     describe("When I get events from sequence 0", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGHybridStore.getEventsFromSequenceNumber({
           entityId,
           sequenceNumber: 0,
         });
@@ -72,7 +72,7 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
 
     describe("When I get events from sequence 2", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGHybridStore.getEventsFromSequenceNumber({
           entityId,
           sequenceNumber: 2,
         });
@@ -91,7 +91,7 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
 
     describe("When I get events from sequence 56", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGHybridStore.getEventsFromSequenceNumber({
           entityId,
           sequenceNumber: 56,
         });

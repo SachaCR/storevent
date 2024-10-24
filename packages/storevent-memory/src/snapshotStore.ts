@@ -13,8 +13,13 @@ export class InMemorySnapshotStore<State extends JsonSerializable>
     this.#snapshotMap = new Map<string, SnapshotData<State>[]>();
   }
 
-  getLastSnapshot(entityId: string): Promise<SnapshotData<State>> {
+  getLastSnapshot(entityId: string): Promise<SnapshotData<State> | undefined> {
     const snapshots = this.#snapshotMap.get(entityId) ?? [];
+
+    if (snapshots.length === 0) {
+      return Promise.resolve(undefined);
+    }
+
     return Promise.resolve(snapshots[snapshots.length - 1]);
   }
 

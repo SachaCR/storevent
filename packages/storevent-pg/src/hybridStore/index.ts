@@ -1,3 +1,4 @@
+import { Pool } from "pg";
 import {
   AppendHybridEventOptions,
   HybridAppendParams,
@@ -6,16 +7,15 @@ import {
   SnapshotData,
   Storevent,
 } from "@storevent/storevent";
-import { Pool } from "pg";
 
 import { createSnapshotTable } from "../postgres/createSnapshotTable";
 import { wrapError } from "../errors/wrapError";
 import { getLastSnapshot } from "../postgres/getLastSnapshot";
 import { getSnapshot } from "../postgres/getSnapshot";
-import { saveSnapshot } from "../postgres/saveSnapshot";
 import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
 import { appendEvents } from "../postgres";
 import { PGHybridStoreConfiguration } from "./interfaces";
+import { saveSnapshot } from "../postgres/saveSnapshot";
 
 export class PGHybridStore<
   Event extends Storevent,
@@ -25,6 +25,7 @@ export class PGHybridStore<
   #entityName: string;
   #eventTableName: string;
   #snapshotTableName: string;
+  #writeMode: "APPEND" | "REPLACE";
 
   #pgPool: Pool;
 
@@ -33,6 +34,7 @@ export class PGHybridStore<
     this.#entityName = entityName;
     this.#snapshotTableName = snapshotTableName ?? `${entityName}_snapshots`;
     this.#eventTableName = eventTableName ?? `${entityName}_events`;
+    this.#writeMode = configuration.writeMode ?? "APPEND";
 
     this.#pgPool = new Pool({
       host: configuration.database.host,
@@ -96,6 +98,7 @@ export class PGHybridStore<
           version: params.snapshot.version,
           tableName: this.#snapshotTableName,
           client,
+          writeMode: this.#writeMode,
         });
       }
       await client.query("COMMIT");
@@ -124,7 +127,9 @@ export class PGHybridStore<
     }
   }
 
-  async getLastSnapshot(entityId: string): Promise<SnapshotData<State>> {
+  async getLastSnapshot(
+    entityId: string,
+  ): Promise<SnapshotData<State> | undefined> {
     try {
       return await getLastSnapshot({
         client: this.#pgPool,
@@ -148,6 +153,7 @@ export class PGHybridStore<
         version: params.version,
         tableName: this.#snapshotTableName,
         client: this.#pgPool,
+        writeMode: this.#writeMode,
       });
     } catch (err) {
       throw wrapError(err);

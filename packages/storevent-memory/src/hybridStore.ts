@@ -57,7 +57,7 @@ export class InMemoryHybridStore<
     return this.#eventStore.getEventsFromSequenceNumber(params);
   }
 
-  getLastSnapshot(entityId: string): Promise<SnapshotData<State>> {
+  getLastSnapshot(entityId: string): Promise<SnapshotData<State> | undefined> {
     return this.#snapshotStore.getLastSnapshot(entityId);
   }
 

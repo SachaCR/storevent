@@ -1,5 +1,7 @@
 # Storevent
 
+![test](https://github.com/SachaCR/dyal/actions/workflows/test.yml/badge.svg)
+
 Storevent is a framework that simplify event sourcing. It makes it easy to build an entity reducer to aggregate your events into a state.
 
 This package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store.
@@ -109,7 +111,9 @@ function applyAccountCreatedEvent() { ... }
 
 ```typescript
 const initialState = { ... }
+
 const events: AccountEvent[] = [ accountCreated, accountCredited, accountDebited, ...]
+
 const newState = new AccountReducer().reduceEvents({
   state: initialState,
   stateVersion: 0,
@@ -124,15 +128,19 @@ The event store interface provides an interface to append new events in your eve
 ```typescript
 const accountEventStore = new AccountInMemoryEventStore()
 
+// Appending events
 await accountEventStore.append({
   entityId: accountId,
   events: [accountCreatedEvent],
 });
 
+// Retrieve all events
 const events = await accountEventStore.getEventsFromSequenceNumber({
   entityId: accountId,
 });
 
+
+// Retrieve event from a given sequence
 const events = await accountEventStore.getEventsFromSequenceNumber({
   entityId: accountId,
   sequenceNumber: 45, // optional default to 0
@@ -141,15 +149,60 @@ const events = await accountEventStore.getEventsFromSequenceNumber({
 
 # Snapshot Store interface
 
-Documentation in progress...
+The `SnapshotStore` interface provides methods to help you save your entity state for a given version.
 
-In the meantime you can check this [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+```typescript
+// Saving a snapshot
+await accountSnapshotStore.saveSnapshot({
+  entityId: '123',
+  snapshot: {status: 'My entity state'},
+  version: 234, // this indicate that this state is the one we obtain after applying event wih sequence 234
+});
+
+// Retrieving the last snapshot for an entity
+const snapshot = await accountSnapshotStore.getLastSnapshot(accountId);
+
+// REtrieving a specific snapshot version if it exists.
+const snapshotVersion = await accountSnapshotStore.getSnapshot({
+  entityId: accountId,
+  version: 234,
+});
+```
+
+You can check this for more details [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
 
 # Hybrid Store interface
 
-Documentation in progress...
+The `HybridStore` interface is here to allow saving your entity events and also persist a snapshot in a transactionnal way. It provide the same methods as `EventStore` and `SnapshotStore`. The only difference is the `append` method signature that can take a snaphost and an array of events.
 
-In the meantime you can check this [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+```typescript
+const snapshotToSave = {
+  state: { content: 'My entity state' },
+  version: 349
+}
+
+await myHybridStore.append({
+  entityId,
+  events: [eventA, eventB],
+  snapshot: snapshotToSave,
+});
+```
+
+You can check this for more details [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
+
+# Implement a custom store
+
+You can implement your own event, snapshot and hybrid store. For this just implement `@storevent/storevent` interfaces. You are of course free to enrich those interfaces with some specific methods related to your project.
+
+See [examples](#examples) section to see how in memory, postgres and mongodb implementation are made.
+
+# Available implementations
+
+- [@storevent/storevent-memory](https://github.com/SachaCR/storevent/tree/main/packages/storevent-memory): Provides a basic in memory implementation. Helpful  for your unit tests.
+
+- [@storevent/storevent-pg](https://github.com/SachaCR/storevent/tree/main/packages/storevent-pg): Provides a basic Postgres implementation. (work in progress)
+
+- [@storevent/storevent-mongo](): Provide a basic Mongo DB implementation. (Not started yet)
 
 # Storevent Error
 
@@ -166,28 +219,10 @@ A `StoreventError` has the following properties:
 
 - `cause`: Original error object if the error is wrapped. Mostly used when the error comes from the underlying layer (postgres, mongo, etc...)
 
-## Concurrency Error
+## Specific errors
+- `ConcurrencyError`: Use this error in your implementation to prevent events from being appended concurrently for the same entity.
+- `WrongSequenceError`: Use this error in your implementation when you detect inconsistency in your event sequence.
+- `UnknownReducerError`: This error is thrown when an `EntityReducer` cannot find a reducer for a given event name.
 
-Use this error in you implementation to prevent events from being appended concurrently for the same entity.
 
-## Wrong Sequence Error
 
-Use this error in you implementation when you detect incoherence event sequence.
-
-## Unknown Reducer Error
-
-This error is thrown when an `EntityReducer` cannot find a reducer for a given event type.
-
-# Available implementations
-
-- [@storevent/storevent-memory](https://github.com/SachaCR/storevent/tree/main/packages/storevent-memory): Provides a basic in memory implementation. Helpful  for your unit tests.
-
-- [@storevent/storevent-pg](https://github.com/SachaCR/storevent/tree/main/packages/storevent-pg): Provides a basic Postgres implementation. (work in progress)
-
-- [@storevent/storevent-mongo](): Provide a basic Mongo DB implementation. (Not started yet)
-
-# Implement a custom store
-
-You can implement your own event, snapshot and hybrid store. For this just implement `@storevent/storevent` interfaces.
-
-See [examples](#examples) section to see how in memory, postgres, mongodb implementation are made.

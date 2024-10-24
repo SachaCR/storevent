@@ -2,6 +2,7 @@ export interface PGHybridStoreConfiguration {
   entityName: string;
   eventTableName?: string;
   snapshotTableName?: string;
+  writeMode?: "APPEND" | "REPLACE";
   database: {
     host: string;
     name: string;
