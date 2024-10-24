@@ -12,7 +12,7 @@ export async function createSnapshotTable(
     state JSON NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY(entity_id, sequence)
+    PRIMARY KEY(entity_id, version)
   )
   `;
 

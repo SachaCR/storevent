@@ -1,0 +1,43 @@
+import { JsonSerializable } from "@storevent/storevent";
+import { Client, Pool, PoolClient } from "pg";
+import * as format from "pg-format";
+import { SnapshotFromDB } from "../snapshotStore/interfaces";
+
+export async function upsertSnapshot<State extends JsonSerializable>(params: {
+  entityId: string;
+  snapshot: State;
+  version: number;
+  tableName: string;
+  client: PoolClient | Pool | Client;
+}): Promise<void> {
+  const { entityId, client, tableName, version } = params;
+
+  const sanitizedUpdateQuery = format.default(
+    `
+      UPDATE %I
+      SET
+        version = %L,
+        state = %L
+      WHERE entity_id = %L
+    `,
+    tableName,
+    version,
+    JSON.stringify(params.snapshot),
+    entityId,
+  );
+
+  const res = await client.query<SnapshotFromDB>(sanitizedUpdateQuery);
+
+  if (res.rowCount === 0) {
+    const sanitizedInsertQuery = format.default(
+      `
+        INSERT INTO %I (entity_id, version, state)
+        VALUES %L
+      `,
+      tableName,
+      [[entityId, version, JSON.stringify(params.snapshot)]],
+    );
+
+    await client.query<SnapshotFromDB>(sanitizedInsertQuery);
+  }
+}
