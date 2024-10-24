@@ -63,8 +63,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Run all tasks for package @storevent/${{ github.event.inputs.package }}
-        run: npm run all -- --filter=@storevent/${{ github.event.inputs.package }}
+      - name: Run build tasks for package @storevent/${{ github.event.inputs.package }}
+        run: npm run build -- --filter=@storevent/${{ github.event.inputs.package }}
 
       - name: Update ${{ github.event.inputs.package }} version
         env:
