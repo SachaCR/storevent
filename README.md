@@ -2,11 +2,9 @@
 
 Storevent is a framework that simplify event sourcing.
 
-The base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store.
+This base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store. It contains an basic `in memory` implementation that you can use in your unit tests.
 
-Scondary concrete event store implementation for different database engines:
-
-- In Memory
+Secondary packages provides concrete implementations for different database engines:
 
 - `@storevent/storevent-pg`: Provide a very basic Postgres implementation (Work In Progress)
 

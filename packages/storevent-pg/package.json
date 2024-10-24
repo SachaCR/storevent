@@ -31,7 +31,7 @@
     "pg": "^8.13.0",
     "pg-format": "^1.0.4"
   },
-  "author": "Sacha Clerc-Renaud",
+  "author": "SachaCR",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/SachaCR/storevent/issues"

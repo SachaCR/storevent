@@ -1,7 +1,7 @@
 {
   "name": "@storevent/storevent",
   "version": "0.0.5",
-  "description": "",
+  "description": "Storevent is a framework that simplify event sourcing.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -19,7 +19,15 @@
     "check-type": "tsc --noEmit"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SachaCR/storevent.git"
+  },
   "author": "SachaCR",
+  "bugs": {
+    "url": "git+https://github.com/SachaCR/storevent.git"
+  },
+  "homepage": "git+https://github.com/SachaCR/storevent.git",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.6",

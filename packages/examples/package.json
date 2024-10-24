@@ -11,8 +11,15 @@
     "fix": "prettier src --write && eslint . --ext .ts --fix",
     "check-type": "tsc --noEmit"
   },
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SachaCR/storevent.git"
+  },
   "author": "SachaCR",
+  "bugs": {
+    "url": "git+https://github.com/SachaCR/storevent.git"
+  },
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.6",
