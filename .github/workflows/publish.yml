@@ -30,11 +30,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Debug
+        run: |
+          echo $GITHUB_WORKSPACE
+          ls -alh
+
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          set-safe-directory: $GITHUB_WORKSPACE
 
-      - name: Git Setup
-        run:  git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Debug
+        run: |
+          ls -alh
 
       - name: Cache turbo build setup
         uses: actions/cache@v4
@@ -58,23 +67,31 @@ jobs:
       - name: Run all tasks for package ${{ github.event.inputs.package }}
         run: npm run all -- --filter=${{ github.event.inputs.package }}
 
+      - name: Debug
+        run: |
+          git status
+
       - name: Update ${{ github.event.inputs.package }} version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm version ${{ github.event.inputs.releaseType }} -m "build(publish): publish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }}
 
-      # - name: Push changes and tags
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     git add -A
-      #     git push --follow-tags
-
-      - name: Publish ${{ github.event.inputs.package }} to NPM
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Debug
         run: |
-          npm publish --workspace=${{ github.event.inputs.package }}
+          git status
+
+      - name: Push changes and tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git add -A
+          git push --follow-tags
+
+      # - name: Publish ${{ github.event.inputs.package }} to NPM
+      #   env:
+      #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      #   run: |
+      #     npm publish --workspace=${{ github.event.inputs.package }}
 
 
