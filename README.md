@@ -8,6 +8,10 @@ The base package is [@storevent/storevent](https://github.com/SachaCR/storevent/
 
 See [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent)
 
+# Available Implementations
+
+[Packages list here](https://github.com/SachaCR/storevent/tree/main/packages/storevent#available-implementations)
+
 # Examples
 
 [Examples Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
