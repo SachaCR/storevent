@@ -27,7 +27,7 @@
   "bugs": {
     "url": "git+https://github.com/SachaCR/storevent.git"
   },
-  "homepage": "git+https://github.com/SachaCR/storevent.git",
+  "homepage": "https://github.com/SachaCR/storevent/blob/main/packages/storevent/README.md",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.6",

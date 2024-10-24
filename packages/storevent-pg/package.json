@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/SachaCR/storevent/issues"
   },
-  "homepage": "https://github.com/SachaCR/storevent#readme",
+  "homepage": "https://github.com/SachaCR/storevent/blob/main/packages/storevent-pg/README.md",
   "devDependencies": {
     "@types/config": "^3.3.5",
     "@types/jest": "^29.5.12",
