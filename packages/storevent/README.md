@@ -8,11 +8,11 @@ This base package `@storevent/stovevent` provides interfaces that you can use to
 
 You'll find an [example](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account) entity named `Account` with implementations for:
 
-- [event store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutEventStore.ts)
-- [snapshot store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutSnapshotStore.ts)
-- [hybrid store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutHybridStore.ts)
-- [entity reducer](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accoutReducer.ts)
-- [entity'events and state](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/interfaces.ts)
+- [event store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountEventStore.ts)
+- [snapshot store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountSnapshotStore.ts)
+- [hybrid store](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountHybridStore.ts)
+- [entity reducer](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/accountReducer.ts)
+- [entity's events and state](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/interfaces.ts)
 - [entity concrete implementation](https://github.com/SachaCR/storevent/tree/main/packages/examples/src/account/index.ts)
 
 ## Declaring your events and state
