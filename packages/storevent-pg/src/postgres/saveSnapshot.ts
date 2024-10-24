@@ -15,7 +15,7 @@ export async function saveSnapshot<State extends JsonSerializable>(params: {
   const sanitizedQuery = format.default(
     "INSERT INTO %I (entity_id, version, state) VALUES %L",
     tableName,
-    [entityId, version, JSON.stringify(params.snapshot)],
+    [[entityId, version, JSON.stringify(params.snapshot)]],
   );
 
   await client.query<SnapshotFromDB>(sanitizedQuery);

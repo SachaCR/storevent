@@ -1,3 +1,4 @@
+import { Pool } from "pg";
 import {
   AppendHybridEventOptions,
   HybridAppendParams,
@@ -6,7 +7,6 @@ import {
   SnapshotData,
   Storevent,
 } from "@storevent/storevent";
-import { Pool } from "pg";
 
 import { createSnapshotTable } from "../postgres/createSnapshotTable";
 import { wrapError } from "../errors/wrapError";
@@ -16,6 +16,7 @@ import { saveSnapshot } from "../postgres/saveSnapshot";
 import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
 import { appendEvents } from "../postgres";
 import { PGHybridStoreConfiguration } from "./interfaces";
+import { upsertSnapshot } from "../postgres/upsertSnapshot";
 
 export class PGHybridStore<
   Event extends Storevent,
@@ -25,6 +26,7 @@ export class PGHybridStore<
   #entityName: string;
   #eventTableName: string;
   #snapshotTableName: string;
+  #writeMode: "APPEND" | "REPLACE";
 
   #pgPool: Pool;
 
@@ -33,6 +35,7 @@ export class PGHybridStore<
     this.#entityName = entityName;
     this.#snapshotTableName = snapshotTableName ?? `${entityName}_snapshots`;
     this.#eventTableName = eventTableName ?? `${entityName}_events`;
+    this.#writeMode = configuration.writeMode ?? "APPEND";
 
     this.#pgPool = new Pool({
       host: configuration.database.host,
@@ -90,13 +93,23 @@ export class PGHybridStore<
       );
 
       if (params.snapshot) {
-        await saveSnapshot({
-          entityId: params.entityId,
-          snapshot: params.snapshot.state,
-          version: params.snapshot.version,
-          tableName: this.#snapshotTableName,
-          client,
-        });
+        if (this.#writeMode === "REPLACE") {
+          await upsertSnapshot({
+            entityId: params.entityId,
+            snapshot: params.snapshot.state,
+            version: params.snapshot.version,
+            tableName: this.#snapshotTableName,
+            client,
+          });
+        } else {
+          await saveSnapshot({
+            entityId: params.entityId,
+            snapshot: params.snapshot.state,
+            version: params.snapshot.version,
+            tableName: this.#snapshotTableName,
+            client,
+          });
+        }
       }
       await client.query("COMMIT");
     } catch (err) {
@@ -142,13 +155,23 @@ export class PGHybridStore<
     version: number;
   }): Promise<void> {
     try {
-      await saveSnapshot({
-        entityId: params.entityId,
-        snapshot: params.snapshot,
-        version: params.version,
-        tableName: this.#snapshotTableName,
-        client: this.#pgPool,
-      });
+      if (this.#writeMode === "APPEND") {
+        await saveSnapshot({
+          entityId: params.entityId,
+          snapshot: params.snapshot,
+          version: params.version,
+          tableName: this.#snapshotTableName,
+          client: this.#pgPool,
+        });
+      } else {
+        await upsertSnapshot({
+          entityId: params.entityId,
+          snapshot: params.snapshot,
+          version: params.version,
+          tableName: this.#snapshotTableName,
+          client: this.#pgPool,
+        });
+      }
     } catch (err) {
       throw wrapError(err);
     }

@@ -10,6 +10,12 @@ import { wrapError } from "../errors/wrapError";
 import { getLastSnapshot } from "../postgres/getLastSnapshot";
 import { getSnapshot } from "../postgres/getSnapshot";
 import { saveSnapshot } from "../postgres/saveSnapshot";
+import { upsertSnapshot } from "../postgres/upsertSnapshot";
+
+export interface PGSnapshotStoreConfiguration
+  extends PGEventStoreConfiguration {
+  writeMode?: "APPEND" | "REPLACE";
+}
 
 export class PGSnapshotStore<State extends JsonSerializable>
   implements SnapshotStore<State>
@@ -17,8 +23,9 @@ export class PGSnapshotStore<State extends JsonSerializable>
   #entityName: string;
   #tableName: string;
   #pgPool: Pool;
+  #writeMode: "APPEND" | "REPLACE";
 
-  constructor(configuration: PGEventStoreConfiguration) {
+  constructor(configuration: PGSnapshotStoreConfiguration) {
     const { entityName, tableName } = configuration;
     this.#entityName = entityName;
     this.#tableName = tableName ?? `${entityName}_snapshots`;
@@ -29,6 +36,7 @@ export class PGSnapshotStore<State extends JsonSerializable>
       password: configuration.database.password,
       user: configuration.database.user,
     });
+    this.#writeMode = configuration.writeMode ?? "APPEND";
   }
 
   get entityName(): string {
@@ -71,13 +79,23 @@ export class PGSnapshotStore<State extends JsonSerializable>
     version: number;
   }): Promise<void> {
     try {
-      await saveSnapshot({
-        entityId: params.entityId,
-        snapshot: params.snapshot,
-        version: params.version,
-        tableName: this.#tableName,
-        client: this.#pgPool,
-      });
+      if (this.#writeMode === "APPEND") {
+        await saveSnapshot({
+          entityId: params.entityId,
+          snapshot: params.snapshot,
+          version: params.version,
+          tableName: this.#tableName,
+          client: this.#pgPool,
+        });
+      } else {
+        await upsertSnapshot({
+          entityId: params.entityId,
+          snapshot: params.snapshot,
+          version: params.version,
+          tableName: this.#tableName,
+          client: this.#pgPool,
+        });
+      }
     } catch (err) {
       throw wrapError(err);
     }
