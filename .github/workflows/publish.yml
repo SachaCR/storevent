@@ -78,10 +78,10 @@ jobs:
           git add .
           git push --follow-tags
 
-      # - name: Publish @storevent/${{ github.event.inputs.package }} to NPM
-      #   env:
-      #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #   run: |
-      #     npm publish --workspace=@storevent/${{ github.event.inputs.package }}
+      - name: Publish @storevent/${{ github.event.inputs.package }} to NPM
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm publish --workspace=@storevent/${{ github.event.inputs.package }}
 
 
