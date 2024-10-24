@@ -1,5 +1,8 @@
 name: Publish package
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,10 +10,10 @@ on:
         type: choice
         description: 'Select a package'
         required: true
-        default: '@storevent/storevent'
+        default: 'storevent'
         options:
-          - '@storevent/storevent'
-          - '@storevent/storevent-pg'
+          - 'storevent'
+          - 'storevent-pg'
 
       releaseType:
         description: 'Release type'
@@ -56,8 +59,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Run all tasks for package ${{ github.event.inputs.package }}
-        run: npm run all -- --filter=${{ github.event.inputs.package }}
+      - name: Run all tasks for package @storevent/${{ github.event.inputs.package }}
+        run: npm run all -- --filter=@storevent/${{ github.event.inputs.package }}
 
       - name: Update ${{ github.event.inputs.package }} version
         env:
@@ -65,8 +68,8 @@ jobs:
           # NPM bug here: npm version will not create commit or tag if package is in a subdorectory.
           # Create a fake .git in sub folder to allow npm version to create the commit and tag
         run: |
-          mkdir ./packages/storevent/.git
-          npm version ${{ github.event.inputs.releaseType }} -m "ci(publish): bump ${{ github.event.inputs.package }} version to %s" --workspace=${{ github.event.inputs.package }}
+          mkdir ./packages/${{ github.event.inputs.package }}/.git
+          npm version ${{ github.event.inputs.releaseType }} -m "ci(publish): bump @storevent/${{ github.event.inputs.package }} version to %s" --workspace=@storevent/${{ github.event.inputs.package }}
 
       - name: Push changes and tags
         env:
@@ -75,10 +78,10 @@ jobs:
           git add .
           git push --follow-tags
 
-      # - name: Publish ${{ github.event.inputs.package }} to NPM
+      # - name: Publish @storevent/${{ github.event.inputs.package }} to NPM
       #   env:
       #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       #   run: |
-      #     npm publish --workspace=${{ github.event.inputs.package }}
+      #     npm publish --workspace=@storevent/${{ github.event.inputs.package }}
 
 
