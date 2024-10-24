@@ -30,28 +30,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      - name: Debug
-        run: |
-          echo $GITHUB_WORKSPACE
-          ls -alh
-
       - name: Check out code
         uses: actions/checkout@v4
         with:
           set-safe-directory: $GITHUB_WORKSPACE
+          fetch-depth: 0
 
-      - name: Debug
+      - name: Git setup
         run: |
-          ls -alh
-
-      - name: Cache turbo build setup
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -64,29 +52,48 @@ jobs:
           npm --version
           npm ci
 
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Run all tasks for package ${{ github.event.inputs.package }}
         run: npm run all -- --filter=${{ github.event.inputs.package }}
-
-      - name: Debug
-        run: |
-          git status
 
       - name: Update ${{ github.event.inputs.package }} version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Create a fake .git folder to allow npm version to create the commit and tag
         run: |
-          npm version ${{ github.event.inputs.releaseType }} -m "build(publish): publish ${{ github.event.inputs.package }} %s" --workspace=${{ github.event.inputs.package }}
+          mkdir ./packages/storevent/.git
+          npm version ${{ github.event.inputs.releaseType }} -m "ci(publish): bump ${{ github.event.inputs.package }} version to %s" --workspace=${{ github.event.inputs.package }}
 
       - name: Debug
         run: |
           git status
+          git tag -l
 
       - name: Push changes and tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git add -A
+          git add .
           git push --follow-tags
+
+      # - name: Push changes and tags
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     git add -A
+      #     git commit -m "build(publish): publish ${{ github.event.inputs.releaseType }} version for ${{ github.event.inputs.package }}"
+      #     git push --follow-tags
+
+      - name: Debug
+        run: |
+          git status
 
       # - name: Publish ${{ github.event.inputs.package }} to NPM
       #   env:
