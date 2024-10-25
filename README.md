@@ -22,6 +22,7 @@ Todo list:
 
 IN PROGRESS:
 - [ ] Finish postgres implementation testing
+- [ ] Debug PGHybridStore tests to understand why they blocks the CI.
 
 DONE:
 - [x] Implement a writeMode option (APPEND or COMPACT) on snapshot store
