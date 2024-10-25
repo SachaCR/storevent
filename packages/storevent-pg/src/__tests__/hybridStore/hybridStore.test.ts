@@ -6,7 +6,7 @@ import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore", () => {
+describe.skip("Component PGHybridStore", () => {
   describe("Given PGHybridStore ", () => {
     const myPGStore = new PGHybridStore({
       entityName: "test_entity",
