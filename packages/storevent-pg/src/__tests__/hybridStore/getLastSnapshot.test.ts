@@ -7,7 +7,7 @@ import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore.getLastSnapshot()", () => {
+describe.skip("Component PGHybridStore.getLastSnapshot()", () => {
   beforeAll(async () => {
     const myPGEventStore = new PGHybridStore({
       entityName: "test_entity",

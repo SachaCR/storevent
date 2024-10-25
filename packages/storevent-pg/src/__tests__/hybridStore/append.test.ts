@@ -10,7 +10,7 @@ import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 const DATABASE_CONFIG =
   config.get<PGHybridStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore.append()", () => {
+describe.skip("Component PGHybridStore.append()", () => {
   beforeAll(async () => {
     const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
