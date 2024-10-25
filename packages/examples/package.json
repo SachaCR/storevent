@@ -40,9 +40,9 @@
     "cqrs"
   ],
   "dependencies": {
-    "@storevent/storevent": "*",
+    "@storevent/storevent": "0.0.10",
     "@storevent/storevent-pg": "*",
-    "@storevent/storevent-memory": "*"
+    "@storevent/storevent-memory": "0.0.3"
   },
   "engines": {
     "node": "20.18.0",

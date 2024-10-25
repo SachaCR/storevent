@@ -257,6 +257,10 @@ describe("Component AccountSnapshotStore", () => {
 
     const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
 
+    if (snapshot1 === undefined) {
+      throw new Error("Snapshot1 not found");
+    }
+
     expect(snapshot1.state).toStrictEqual(accountState);
     expect(snapshot1.version).toStrictEqual(accountVersion);
 
@@ -278,6 +282,10 @@ describe("Component AccountSnapshotStore", () => {
     });
 
     const snapshot2 = await accountSnapshotStore.getLastSnapshot(accountId);
+
+    if (snapshot2 === undefined) {
+      throw new Error("Snapshot2 not found");
+    }
 
     expect(snapshot2.state).toStrictEqual(newAccountState.state);
     expect(snapshot2.version).toStrictEqual(newAccountState.version);
@@ -333,6 +341,10 @@ describe("Component AccountHybridStore", () => {
     });
 
     const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
+
+    if (snapshot1 === undefined) {
+      throw new Error("Snapshot1 not found");
+    }
 
     expect(snapshot1.state).toStrictEqual(accountState);
     expect(snapshot1.version).toStrictEqual(accountVersion);
