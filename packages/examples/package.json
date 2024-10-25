@@ -41,7 +41,7 @@
   ],
   "dependencies": {
     "@storevent/storevent": "0.0.10",
-    "@storevent/storevent-pg": "*",
+    "@storevent/storevent-pg": "0.0.3",
     "@storevent/storevent-memory": "0.0.3"
   },
   "engines": {
