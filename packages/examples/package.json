@@ -33,6 +33,12 @@
     "ts-jest": "^29.1.2",
     "typescript": "^5.3.3"
   },
+  "keywords": [
+    "event",
+    "sourcing",
+    "event sourcing",
+    "cqrs"
+  ],
   "dependencies": {
     "@storevent/storevent": "^0.0.9",
     "@storevent/storevent-pg": "^0.0.2",

@@ -24,7 +24,9 @@
   },
   "keywords": [
     "event",
-    "sourcing"
+    "sourcing",
+    "event sourcing",
+    "cqrs"
   ],
   "dependencies": {
     "@storevent/storevent": "^0.0.9",

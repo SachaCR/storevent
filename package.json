@@ -20,6 +20,12 @@
   "bugs": {
     "url": "git+https://github.com/SachaCR/storevent.git"
   },
+  "keywords": [
+    "event",
+    "sourcing",
+    "event sourcing",
+    "cqrs"
+  ],
   "homepage": "git+https://github.com/SachaCR/storevent.git",
   "workspaces": [
     "packages/*"
