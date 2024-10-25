@@ -8,6 +8,8 @@ The base package `@storevent/stovevent` provides interfaces that you can use to 
 
 You can also decide to use a packages that provides an implementation for Postgres, MongoDB, etc.... See [Available Packages List](https://github.com/SachaCR/storevent/tree/main/packages/storevent#available-implementations)
 
+[![NPM](https://nodei.co/npm/@storevent%2Fstorevent.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/@storevent%2Fstorevent/)
+
 # Documentation
 
 See [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent)
