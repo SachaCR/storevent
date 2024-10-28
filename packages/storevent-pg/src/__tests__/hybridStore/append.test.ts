@@ -4,13 +4,12 @@ import { Client } from "pg";
 import { WrongSequenceError } from "@storevent/storevent";
 
 import { PGHybridStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGHybridStoreConfiguration["database"]>("database");
 
-describe.skip("Component PGHybridStore.append()", () => {
+describe("Component PGHybridStore.append()", () => {
   beforeAll(async () => {
     const myPGHybridStore = new PGHybridStore({
       entityName: "test_entity",
@@ -18,11 +17,11 @@ describe.skip("Component PGHybridStore.append()", () => {
     });
     await myPGHybridStore.initTable();
     await myPGHybridStore.stop();
-    await clearDatabase();
   });
 
   describe("Given an entity id without any event stored", () => {
     const entityId = crypto.randomUUID();
+
     describe("When I append new events", () => {
       const eventsToAppend = [
         {
@@ -54,8 +53,6 @@ describe.skip("Component PGHybridStore.append()", () => {
         });
 
         try {
-          await myPGHybridStore.initTable();
-
           await myPGHybridStore.append({
             entityId,
             events: eventsToAppend,
@@ -108,7 +105,6 @@ describe.skip("Component PGHybridStore.append()", () => {
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.initTable();
       await myPGHybridStore.append({
         entityId,
         events: [
@@ -221,7 +217,6 @@ describe.skip("Component PGHybridStore.append()", () => {
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.initTable();
       await myPGHybridStore.append({
         entityId,
         events: [
@@ -296,7 +291,6 @@ describe.skip("Component PGHybridStore.append()", () => {
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.initTable();
       await myPGHybridStore.append({
         entityId,
         events: [

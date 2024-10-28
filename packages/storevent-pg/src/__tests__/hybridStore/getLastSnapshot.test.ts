@@ -7,7 +7,7 @@ import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe.skip("Component PGHybridStore.getLastSnapshot()", () => {
+describe("Component PGHybridStore.getLastSnapshot()", () => {
   beforeAll(async () => {
     const myPGEventStore = new PGHybridStore({
       entityName: "test_entity",
@@ -34,21 +34,23 @@ describe.skip("Component PGHybridStore.getLastSnapshot()", () => {
         database: DATABASE_CONFIG,
       });
 
-      await myPGEventStore.initTable();
+      try {
+        await myPGEventStore.initTable();
 
-      await myPGEventStore.saveSnapshot({
-        entityId,
-        snapshot: stateToSave1,
-        version: 1,
-      });
+        await myPGEventStore.saveSnapshot({
+          entityId,
+          snapshot: stateToSave1,
+          version: 1,
+        });
 
-      await myPGEventStore.saveSnapshot({
-        entityId,
-        snapshot: stateToSave2,
-        version: 2,
-      });
-
-      await myPGEventStore.stop();
+        await myPGEventStore.saveSnapshot({
+          entityId,
+          snapshot: stateToSave2,
+          version: 2,
+        });
+      } finally {
+        await myPGEventStore.stop();
+      }
     });
 
     describe("When I get the last snapshot", () => {

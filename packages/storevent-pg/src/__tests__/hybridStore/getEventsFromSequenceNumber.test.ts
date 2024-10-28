@@ -6,7 +6,7 @@ import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 const DATABASE_CONFIG =
   config.get<PGHybridStoreConfiguration["database"]>("database");
 
-describe.skip("Component PGHybridStore.getEventsFromSequenceNumber()", () => {
+describe("Component PGHybridStore.getEventsFromSequenceNumber()", () => {
   beforeAll(async () => {
     await clearDatabase();
   });

@@ -13,7 +13,7 @@ import { wrapError } from "../errors/wrapError";
 import { getLastSnapshot } from "../postgres/getLastSnapshot";
 import { getSnapshot } from "../postgres/getSnapshot";
 import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
-import { appendEvents } from "../postgres";
+import { appendEvents, createEventTable } from "../postgres";
 import { PGHybridStoreConfiguration } from "./interfaces";
 import { saveSnapshot } from "../postgres/saveSnapshot";
 
@@ -42,6 +42,7 @@ export class PGHybridStore<
       port: configuration.database.port,
       password: configuration.database.password,
       user: configuration.database.user,
+      connectionTimeoutMillis: configuration.database.connectionTimeoutMillis,
     });
   }
 
@@ -66,6 +67,7 @@ export class PGHybridStore<
 
     try {
       await createSnapshotTable(this.#snapshotTableName, pool);
+      await createEventTable(this.#eventTableName, pool);
     } catch (err) {
       throw wrapError(err);
     }

@@ -30,6 +30,7 @@ export class PGEventStore<Event extends Storevent>
       port: configuration.database.port,
       password: configuration.database.password,
       user: configuration.database.user,
+      connectionTimeoutMillis: configuration.database.connectionTimeoutMillis,
     });
   }
 

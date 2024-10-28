@@ -4,6 +4,7 @@
     "name": "storevent-pg",
     "port": 5432,
     "password": "admin",
-    "user": "postgres"
+    "user": "postgres",
+    "connectionTimeoutMillis": "30000"
   }
 }

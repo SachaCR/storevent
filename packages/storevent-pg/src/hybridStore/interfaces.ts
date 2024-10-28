@@ -9,5 +9,6 @@ export interface PGHybridStoreConfiguration {
     port: number;
     password: string;
     user: string;
+    connectionTimeoutMillis?: number;
   };
 }

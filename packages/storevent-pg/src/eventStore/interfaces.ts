@@ -9,6 +9,7 @@ export interface PGEventStoreConfiguration {
     port: number;
     password: string;
     user: string;
+    connectionTimeoutMillis?: number;
   };
 }
 

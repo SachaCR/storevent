@@ -34,6 +34,7 @@ export class PGSnapshotStore<State extends JsonSerializable>
       port: configuration.database.port,
       password: configuration.database.password,
       user: configuration.database.user,
+      connectionTimeoutMillis: configuration.database.connectionTimeoutMillis,
     });
     this.#writeMode = configuration.writeMode ?? "APPEND";
   }

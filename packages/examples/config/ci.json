@@ -4,6 +4,7 @@
     "name": "postgres",
     "port": 5432,
     "password": "postgres",
-    "user": "postgres"
+    "user": "postgres",
+    "connectionTimeoutMillis": "1000"
   }
 }
