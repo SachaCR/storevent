@@ -9,6 +9,7 @@
   "coverageReporters": [
     "lcov"
   ],
+  "globalSetup": "./src/__tests__/setup.ts",
   "coverageDirectory": "./docs/coverage",
   "preset": "ts-jest",
   "testEnvironment": "node",

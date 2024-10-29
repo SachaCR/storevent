@@ -4,23 +4,12 @@ import { Client } from "pg";
 import { WrongSequenceError } from "@storevent/storevent";
 
 import { PGEventStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 describe("Component PGEventStore.append()", () => {
-  beforeAll(async () => {
-    const myPGEventStore = new PGEventStore({
-      entityName: "test_entity",
-      database: DATABASE_CONFIG,
-    });
-    await myPGEventStore.initTable();
-    await myPGEventStore.stop();
-    await clearDatabase();
-  });
-
   describe("Given an entity id without any event stored", () => {
     const entityId = crypto.randomUUID();
     describe("When I append new events", () => {

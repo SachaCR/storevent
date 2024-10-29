@@ -1,23 +1,12 @@
 import config from "config";
 
 import { PGError, PGSnapshotStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 describe("Component PGSnapshotStore.getSnapshot()", () => {
-  beforeAll(async () => {
-    const myPGEventStore = new PGSnapshotStore({
-      entityName: "test_entity",
-      database: DATABASE_CONFIG,
-    });
-    await myPGEventStore.initTable();
-    await myPGEventStore.stop();
-    await clearDatabase();
-  });
-
   describe("Given an entity with some snapshots in database", () => {
     const entityId = crypto.randomUUID();
     const stateToSave1 = {

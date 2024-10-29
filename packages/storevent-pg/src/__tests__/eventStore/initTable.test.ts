@@ -2,17 +2,12 @@ import config from "config";
 import { Client } from "pg";
 
 import { PGEventStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 describe("Component PGEventStore.initTable()", () => {
-  beforeEach(async () => {
-    await clearDatabase();
-  });
-
   describe("Given A valid configuration", () => {
     describe("When I call initTable", () => {
       test("Then it successfully creates the expected table", async () => {

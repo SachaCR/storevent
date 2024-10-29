@@ -1,16 +1,11 @@
 import config from "config";
 import { PGEventStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
-  beforeAll(async () => {
-    await clearDatabase();
-  });
-
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
     const myPGEventStore = new PGEventStore({

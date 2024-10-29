@@ -1,16 +1,11 @@
 import config from "config";
 import { PGHybridStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGHybridStoreConfiguration["database"]>("database");
 
 describe("Component PGHybridStore.getEventsFromSequenceNumber()", () => {
-  beforeAll(async () => {
-    await clearDatabase();
-  });
-
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
     const myPGHybridStore = new PGHybridStore({

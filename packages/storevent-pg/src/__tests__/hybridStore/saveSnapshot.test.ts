@@ -2,23 +2,12 @@ import config from "config";
 import { Client } from "pg";
 
 import { PGError, PGHybridStore } from "../..";
-import { clearDatabase } from "../clearDatabase";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 describe("Component PGHybridStore.saveSnapshot()", () => {
-  beforeAll(async () => {
-    const myPGEventStore = new PGHybridStore({
-      entityName: "test_entity",
-      database: DATABASE_CONFIG,
-    });
-    await myPGEventStore.initTable();
-    await myPGEventStore.stop();
-    await clearDatabase();
-  });
-
   describe("Given an entity state", () => {
     const stateToSave = {
       myState: "my current state",
