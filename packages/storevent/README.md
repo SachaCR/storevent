@@ -198,9 +198,9 @@ See [examples](#examples) section to see how in memory, postgres and mongodb imp
 
 # Available implementations
 
-- [@storevent/storevent-memory](https://github.com/SachaCR/storevent/tree/main/packages/storevent-memory): Provides a basic in memory implementation. Helpful  for your unit tests.
+- [@storevent/storevent-memory](https://www.npmjs.com/package/@storevent/storevent-memory): Provides a basic in memory implementation. Helpful  for your unit tests.
 
-- [@storevent/storevent-pg](https://github.com/SachaCR/storevent/tree/main/packages/storevent-pg): Provides a basic Postgres implementation. (work in progress)
+- [@storevent/storevent-pg](https://www.npmjs.com/package/@storevent/storevent-pg): Provides a basic Postgres implementation. (work in progress)
 
 - [@storevent/storevent-mongo](): Provide a basic Mongo DB implementation. (Not started yet)
 

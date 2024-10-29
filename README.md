@@ -11,7 +11,7 @@ You can also decide to use a packages that provides an implementation for Postgr
 
 # Documentation
 
-See [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packages/storevent)
+See [@storevent/storevent](https://www.npmjs.com/package/@storevent/storevent)
 
 # Examples
 
