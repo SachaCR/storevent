@@ -97,6 +97,108 @@ describe("Component PGHybridStore.append()", () => {
     });
   });
 
+  describe("Given an entity id without any event stored", () => {
+    const entityId = crypto.randomUUID();
+
+    describe("When I append new events and a snapshot", () => {
+      const eventsToAppend = [
+        {
+          name: "event_1",
+          payload: { value: 1 },
+        },
+        {
+          name: "event_2",
+          payload: { value: 2 },
+        },
+        {
+          name: "event_3",
+          payload: { value: 3 },
+        },
+      ];
+
+      const snapshot = {
+        state: { status: "active" },
+        version: 3,
+      };
+
+      test("Then it successfully insert the events and the snapshot", async () => {
+        const myPGHybridStore = new PGHybridStore({
+          entityName: "test_entity",
+          database: DATABASE_CONFIG,
+        });
+
+        const client = new Client({
+          host: DATABASE_CONFIG.host,
+          database: DATABASE_CONFIG.name,
+          port: DATABASE_CONFIG.port,
+          password: DATABASE_CONFIG.password,
+          user: DATABASE_CONFIG.user,
+        });
+
+        try {
+          await myPGHybridStore.append({
+            entityId,
+            events: eventsToAppend,
+            snapshot,
+          });
+
+          await client.connect();
+
+          const result = await client.query(
+            `
+            SELECT * FROM test_entity_events WHERE entity_id = $1
+          `,
+            [entityId],
+          );
+
+          expect(result.rows).toHaveLength(3);
+          expect(result.rows[0]).toStrictEqual({
+            name: "event_1",
+            payload: { value: 1 },
+            sequence: "1",
+            entity_id: entityId,
+            appended_at: expect.any(Date) as Date,
+          });
+          expect(result.rows[1]).toStrictEqual({
+            name: "event_2",
+            payload: { value: 2 },
+            sequence: "2",
+            entity_id: entityId,
+            appended_at: expect.any(Date) as Date,
+          });
+          expect(result.rows[2]).toStrictEqual({
+            name: "event_3",
+            payload: { value: 3 },
+            sequence: "3",
+            entity_id: entityId,
+            appended_at: expect.any(Date) as Date,
+          });
+
+          const resultSnapshot = await client.query(
+            `
+            SELECT * FROM test_entity_snapshots WHERE entity_id = $1
+          `,
+            [entityId],
+          );
+
+          expect(resultSnapshot.rows).toHaveLength(1);
+          expect(resultSnapshot.rows[0]).toStrictEqual({
+            entity_id: entityId,
+            state: {
+              status: "active",
+            },
+            version: "3",
+            created_at: expect.any(Date) as Date,
+            updated_at: expect.any(Date) as Date,
+          });
+        } finally {
+          await myPGHybridStore.stop();
+          await client.end();
+        }
+      });
+    });
+  });
+
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
     const myPGHybridStore = new PGHybridStore({

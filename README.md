@@ -22,11 +22,11 @@ See [@storevent/storevent](https://github.com/SachaCR/storevent/tree/main/packag
 Todo list:
 
 IN PROGRESS:
-- [ ] Finish postgres implementation testing.
 - [ ] Differentiate tags by packages to avoid conflicts.
-- [ ] Debug PGHybridStore tests to understand why they blocks the CI.
 
 DONE:
+- [x] Finish postgres implementation testing.
+- [x] Debug PGHybridStore tests to understand why they blocks the CI.
 - [x] Implement a writeMode option (APPEND or COMPACT) on snapshot store
 - [x] Publish storevent package
 - [x] Publish storevent-pg package
