@@ -73,7 +73,7 @@ jobs:
           # Create a fake .git in sub folder to allow npm version to create the commit and tag
         run: |
           mkdir ./packages/${{ github.event.inputs.package }}/.git
-          npm version ${{ github.event.inputs.releaseType }} -m "ci(publish): bump @storevent/${{ github.event.inputs.package }} version to %s" --workspace=@storevent/${{ github.event.inputs.package }}
+          npm version ${{ github.event.inputs.releaseType }} --tag-version-prefix="${{ github.event.inputs.package }}@" -m "ci(publish): bump @storevent/${{ github.event.inputs.package }} version to %s" --workspace=@storevent/${{ github.event.inputs.package }}
 
       - name: Push changes and tags
         env:
@@ -87,6 +87,6 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm publish --access public --workspace=@storevent/${{ github.event.inputs.package }}
+          npm publish --dry-run --access public --workspace=@storevent/${{ github.event.inputs.package }}
 
 
