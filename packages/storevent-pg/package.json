@@ -1,6 +1,6 @@
 {
   "name": "@storevent/storevent-pg",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Postgres implementation of storevent library interface",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
