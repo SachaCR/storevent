@@ -11,12 +11,13 @@
     "access": "public"
   },
   "scripts": {
-    "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build",
+    "all": "npm run test && npm run fix && npm run lint && npm run check-type && npm run build && npm run doc",
     "build": "tsc",
     "test": "jest --passWithNoTests",
     "lint": "eslint . --ext .ts",
     "fix": "prettier src --write && eslint . --ext .ts --fix",
-    "check-type": "tsc --noEmit"
+    "check-type": "tsc --noEmit",
+    "doc": "typedoc --options typedoc.json"
   },
   "keywords": [
     "event",
@@ -48,6 +49,7 @@
     "jest-html-reporters": "^3.1.7",
     "prettier": "^3.2.4",
     "ts-jest": "^29.1.2",
+    "typedoc": "^0.26.10",
     "typescript": "^5.3.3"
   },
   "engines": {

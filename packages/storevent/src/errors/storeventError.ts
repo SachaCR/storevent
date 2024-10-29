@@ -1,5 +1,5 @@
 /**
- * @description Abstract class that represent our custom errors.
+ * Abstract class that represent storevent custom errors. Ecxtends this class to create custom errors in your implementations.
  * @typeParam Code - Type that will define the error code enum.
  * @typeParam Details - Type that will define the error details.
  */

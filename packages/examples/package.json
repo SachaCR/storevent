@@ -9,7 +9,8 @@
     "test": "jest --passWithNoTests",
     "lint": "eslint . --ext .ts",
     "fix": "prettier src --write && eslint . --ext .ts --fix",
-    "check-type": "tsc --noEmit"
+    "check-type": "tsc --noEmit",
+    "doc": "echo 'No documentation available'"
   },
   "repository": {
     "type": "git",

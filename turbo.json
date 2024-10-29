@@ -54,6 +54,17 @@
       "dependsOn": [
         "^check-type"
       ]
+    },
+    "doc": {
+      "inputs": [
+        "src/**"
+      ],
+      "outputs": [
+        "docs/**"
+      ],
+      "dependsOn": [
+        "^doc"
+      ]
     }
   }
 }

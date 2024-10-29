@@ -1,0 +1,12 @@
+{
+  "readme": "README.md",
+  "includeVersion": true,
+  "name": "@storevent/storevent-pg",
+  "theme": "default",
+  "entryPoints": ["src/index.ts"],
+  "out": "../../docs/storevent-pg",
+  "tsconfig": "tsconfig.json",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true
+}

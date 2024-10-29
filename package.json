@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "all": "turbo test fix lint check-type build",
+    "all": "turbo test fix lint check-type build doc",
     "test": "turbo test",
+    "doc": "turbo doc",
     "fix": "turbo fix",
     "lint": "turbo lint",
     "check-type": "turbo check-type",
