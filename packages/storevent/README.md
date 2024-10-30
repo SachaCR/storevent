@@ -8,6 +8,9 @@ This package `@storevent/stovevent` provides interfaces that you can use to buil
 
 You can also decide to use a packages that provides an implementation for Postgres, MongoDB, etc.... See [Available Packages List](#available-implementations)
 
+# Documentation
+📕 [Types Documentation Here](https://sachacr.github.io/storevent/storevent/index.html) 📕
+
 # Examples
 
 Storevent provides examples that takes the case of an entity `Account` that represents a simple bank account. It can be created, credited with some money or debited. Each of these action produce an event: `AccountCreated`, `AccountCredited`, `AccountDebited`.
