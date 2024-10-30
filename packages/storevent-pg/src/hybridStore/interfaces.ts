@@ -1,3 +1,6 @@
+/**
+ * Configuration object for the PGHybridStore
+ */
 export interface PGHybridStoreConfiguration {
   entityName: string;
   eventTableName?: string;

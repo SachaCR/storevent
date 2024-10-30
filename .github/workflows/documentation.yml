@@ -27,6 +27,7 @@ jobs:
   publish-pages:
     name: Publish pages
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
 
     environment:
       name: github-pages

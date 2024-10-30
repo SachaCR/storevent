@@ -13,6 +13,10 @@ import { saveSnapshot } from "../postgres/saveSnapshot";
 
 export interface PGSnapshotStoreConfiguration
   extends PGEventStoreConfiguration {
+  /**
+   * This options allows to specify the write mode for the snapshot store.
+   * Append mode will append the snapshot to the table, while replace mode will replace the snapshot if it already exists.
+   */
   writeMode?: "APPEND" | "REPLACE";
 }
 
