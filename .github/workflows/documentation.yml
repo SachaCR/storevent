@@ -39,12 +39,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
-          cache: npm
-          cache-dependency-path: package-lock.json
+          node-version: 20.18.0
 
-      - name: npm install
-        run: npm ci
+      - name: Install dependencies
+        run: |
+          node --version
+          npm --version
+          npm ci
 
       - name: Build
         run: npm run doc
