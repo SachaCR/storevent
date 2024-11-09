@@ -1,6 +1,5 @@
-import { JsonSerializable, Storevent } from "../../../";
-
-import { EntityReducer } from "../entityReducer";
+import { JsonSerializable, Storevent } from "../../";
+import { EntityReducer } from "../";
 
 export interface TestEventA extends Storevent {
   name: "EventA";

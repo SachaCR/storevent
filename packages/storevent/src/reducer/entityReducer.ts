@@ -4,7 +4,7 @@ import {
   Storevent,
   EntityReducerInterface,
   EventReducer,
-} from "../../";
+} from "..";
 
 /**
  * This class is used to reduce events for a specific entity.

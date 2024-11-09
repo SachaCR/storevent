@@ -6,8 +6,7 @@ import {
   TestEvent,
   TestState,
 } from "../__tests__/testEvents";
-
-import { EntityReducer } from "../entityReducer";
+import { EntityReducer } from "../";
 
 describe("Component EntityReducer", () => {
   describe("Given an entityReducer", () => {

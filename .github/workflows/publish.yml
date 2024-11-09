@@ -16,7 +16,6 @@ on:
           - 'storevent-pg'
           - 'storevent-memory'
 
-
       releaseType:
         description: 'Release type'
         required: true
@@ -89,4 +88,42 @@ jobs:
         run: |
           npm publish --access public --workspace=@storevent/${{ github.event.inputs.package }}
 
+  update-documentation:
+    name: Publish Documentation
+    runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.0
+
+      - name: Install dependencies
+        run: |
+          node --version
+          npm --version
+          npm ci
+
+      - name: Build
+        run: npm run doc --workspace=@storevent/storevent
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: './docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,2 +1,2 @@
 export * from "./interfaces";
-export * from "./implementations/entityReducer";
+export * from "./entityReducer";
