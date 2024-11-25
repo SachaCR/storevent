@@ -49,6 +49,6 @@ jobs:
           npm ci
 
       - name: Run all tasks
-        run: npm run all -- --force
+        run: npm run all
 
 
