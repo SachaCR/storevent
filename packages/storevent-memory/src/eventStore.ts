@@ -1,3 +1,5 @@
+import EventEmitter from "events";
+
 import {
   AppendEventOptions,
   EventStore,
@@ -10,10 +12,12 @@ export class InMemoryEventStore<Event extends Storevent>
 {
   #entityName: string;
   #eventMap: Map<string, Event[]>;
+  #eventEmitter: EventEmitter;
 
   constructor(entityName: string) {
     this.#entityName = entityName;
     this.#eventMap = new Map<string, Event[]>();
+    this.#eventEmitter = new EventEmitter();
   }
 
   get entityName(): string {
@@ -48,6 +52,12 @@ export class InMemoryEventStore<Event extends Storevent>
 
     this.#eventMap.set(entityId, entityEvents);
 
+    this.#eventEmitter.emit("EventAppended", {
+      entityName: this.#entityName,
+      entityId,
+      events,
+    });
+
     return Promise.resolve();
   }
 
@@ -79,5 +89,15 @@ export class InMemoryEventStore<Event extends Storevent>
       events: eventsFromSequence,
       lastEventSequenceNumber,
     });
+  }
+
+  onEventAppended(
+    handler: (event: {
+      entityName: string;
+      entityId: string;
+      events: Event[];
+    }) => void,
+  ): void {
+    this.#eventEmitter.on("EventAppended", handler);
   }
 }

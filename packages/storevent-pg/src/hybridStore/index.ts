@@ -16,6 +16,7 @@ import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNu
 import { appendEvents, createEventTable } from "../postgres";
 import { PGHybridStoreConfiguration } from "./interfaces";
 import { saveSnapshot } from "../postgres/saveSnapshot";
+import EventEmitter from "events";
 
 export class PGHybridStore<
   Event extends Storevent,
@@ -26,6 +27,7 @@ export class PGHybridStore<
   #eventTableName: string;
   #snapshotTableName: string;
   #writeMode: "APPEND" | "REPLACE";
+  #eventEmitter: EventEmitter;
 
   #pgPool: Pool;
 
@@ -35,6 +37,7 @@ export class PGHybridStore<
     this.#snapshotTableName = snapshotTableName ?? `${entityName}_snapshots`;
     this.#eventTableName = eventTableName ?? `${entityName}_events`;
     this.#writeMode = configuration.writeMode ?? "APPEND";
+    this.#eventEmitter = new EventEmitter();
 
     this.#pgPool = new Pool({
       host: configuration.database.host,
@@ -104,6 +107,12 @@ export class PGHybridStore<
         });
       }
       await client.query("COMMIT");
+
+      this.#eventEmitter.emit("EventAppended", {
+        entityName: this.#entityName,
+        entityId: params.entityId,
+        events: params.events,
+      });
     } catch (err) {
       await client.query("ROLLBACK");
 
@@ -176,5 +185,15 @@ export class PGHybridStore<
     } catch (err) {
       throw wrapError(err);
     }
+  }
+
+  onEventAppended(
+    handler: (event: {
+      entityName: string;
+      entityId: string;
+      events: Event[];
+    }) => void,
+  ): void {
+    this.#eventEmitter.on("EventAppended", handler);
   }
 }

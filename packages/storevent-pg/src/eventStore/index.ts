@@ -1,3 +1,4 @@
+import EventEmitter from "events";
 import { Pool } from "pg";
 
 import {
@@ -8,9 +9,9 @@ import {
 
 import { wrapError } from "../errors/wrapError";
 import { appendEvents, createEventTable } from "../postgres/";
+import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
 
 import { PGEventStoreConfiguration } from "./interfaces";
-import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
 export type { PGEventStoreConfiguration } from "./interfaces";
 
 export class PGEventStore<Event extends Storevent>
@@ -19,11 +20,13 @@ export class PGEventStore<Event extends Storevent>
   #entityName: string;
   #tableName: string;
   #pgPool: Pool;
+  #eventEmitter: EventEmitter;
 
   constructor(configuration: PGEventStoreConfiguration) {
     const { entityName, tableName } = configuration;
     this.#entityName = entityName;
     this.#tableName = tableName ?? `${entityName}_events`;
+    this.#eventEmitter = new EventEmitter();
     this.#pgPool = new Pool({
       host: configuration.database.host,
       database: configuration.database.name,
@@ -56,6 +59,16 @@ export class PGEventStore<Event extends Storevent>
     }
   }
 
+  onEventAppended(
+    handler: (event: {
+      entityName: string;
+      entityId: string;
+      events: Event[];
+    }) => void,
+  ): void {
+    this.#eventEmitter.on("EventAppended", handler);
+  }
+
   async append(
     params: { entityId: string; events: Event[] },
     options?: AppendEventOptions,
@@ -71,6 +84,14 @@ export class PGEventStore<Event extends Storevent>
         },
         options,
       );
+
+      if (this.#eventEmitter.listenerCount("EventAppended") > 0) {
+        this.#eventEmitter.emit("EventAppended", {
+          entityName: this.#entityName,
+          entityId: params.entityId,
+          events: params.events,
+        });
+      }
     } catch (err) {
       throw wrapError(err);
     }

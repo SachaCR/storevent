@@ -126,7 +126,7 @@ const newState = new AccountReducer().reduceEvents({
 
 # Event Store interface
 
-The event store interface provides an interface to append new events in your event store and a method to retrieve your events.
+The event store interface provides an interface to append new events in your event store and a method to retrieve your events. You can also subscribe to notifications to trigger a callback when new events are appended to the store.
 
 ```typescript
 const accountEventStore = new AccountInMemoryEventStore()
@@ -142,11 +142,17 @@ const events = await accountEventStore.getEventsFromSequenceNumber({
   entityId: accountId,
 });
 
-
 // Retrieve event from a given sequence
 const events = await accountEventStore.getEventsFromSequenceNumber({
   entityId: accountId,
   sequenceNumber: 45, // optional default to 0
+});
+
+// Register a listener to be notified when new events are appended.
+accountEventStore.onEventAppended((notification) => {
+  notification.entityName;
+  notification.entityId;
+  notification.events;
 });
 ```
 

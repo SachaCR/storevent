@@ -65,4 +65,16 @@ export interface HybridStore<
      */
     sequenceNumber?: number;
   }): Promise<{ events: Event[]; lastEventSequenceNumber: number }>;
+
+  /**
+   * You can use this method to listen to new events appended to the store. This is useful to implement projections or publish your events into a message broker.
+   * @param handler  - The handler to be called when new events are appended.
+   */
+  onEventAppended(
+    handler: (event: {
+      entityName: string;
+      entityId: string;
+      events: Event[];
+    }) => void,
+  ): void;
 }
