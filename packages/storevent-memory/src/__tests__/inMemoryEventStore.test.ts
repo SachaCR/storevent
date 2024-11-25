@@ -262,4 +262,50 @@ describe("Component InMemoryEventStore", () => {
       });
     });
   });
+
+  describe("Given I registered a handler with onEventAppended", () => {
+    describe("When I append events", () => {
+      test("Then I my handler is called", async () => {
+        const eventStore = new InMemoryEventStore<TestEvent>("TestEntity");
+        const entityId = "1";
+
+        let expectedEntityName = "";
+        let expectedEntityId = "";
+        const expectedEventNames: string[] = [];
+
+        eventStore.onEventAppended((notification) => {
+          expectedEntityName = notification.entityName;
+          expectedEntityId = notification.entityId;
+
+          notification.events.forEach((event) =>
+            expectedEventNames.push(event.name),
+          );
+        });
+
+        await eventStore.append({
+          entityId,
+          events: [buildTestEvent("EventA")],
+        });
+
+        await eventStore.append({
+          entityId: "1",
+          events: [buildTestEvent("EventB")],
+        });
+
+        await eventStore.append({
+          entityId: "1",
+          events: [buildTestEvent("EventC"), buildTestEvent("EventB")],
+        });
+
+        expect(expectedEntityName).toStrictEqual("TestEntity");
+        expect(expectedEntityId).toStrictEqual(entityId);
+        expect(expectedEventNames).toStrictEqual([
+          "EventA",
+          "EventB",
+          "EventC",
+          "EventB",
+        ]);
+      });
+    });
+  });
 });

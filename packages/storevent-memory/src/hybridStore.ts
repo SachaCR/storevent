@@ -1,3 +1,5 @@
+import EventEmitter from "events";
+
 import {
   AppendHybridEventOptions,
   HybridAppendParams,
@@ -17,12 +19,13 @@ export class InMemoryHybridStore<
   #entityName: string;
   #eventStore: InMemoryEventStore<Event>;
   #snapshotStore: InMemorySnapshotStore<State>;
+  #eventEmitter: EventEmitter;
 
   constructor(entityName: string) {
     this.#entityName = entityName;
     this.#eventStore = new InMemoryEventStore<Event>(entityName);
     this.#snapshotStore = new InMemorySnapshotStore<State>();
-    this;
+    this.#eventEmitter = new EventEmitter();
   }
 
   get entityName(): string {
@@ -47,7 +50,23 @@ export class InMemoryHybridStore<
       });
     }
 
+    this.#eventEmitter.emit("EventAppended", {
+      entityName: this.#entityName,
+      entityId,
+      events,
+    });
+
     return Promise.resolve();
+  }
+
+  onEventAppended(
+    handler: (event: {
+      entityName: string;
+      entityId: string;
+      events: Event[];
+    }) => void,
+  ) {
+    this.#eventStore.onEventAppended(handler);
   }
 
   async getEventsFromSequenceNumber(params: {
