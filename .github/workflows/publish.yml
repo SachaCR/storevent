@@ -48,6 +48,8 @@ jobs:
         with:
           set-safe-directory: $GITHUB_WORKSPACE
 
+
+
       - name: Git setup
         run: |
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -80,7 +82,7 @@ jobs:
       - name: Update ${{ github.event.inputs.package }} version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # NPM bug here: npm version will not create commit or tag if package is in a subdorectory.
+          # NPM bug here: npm version will not create commit or tag if package is in a subdirectory.
           # Create a fake .git in sub folder to allow npm version to create the commit and tag
         run: |
           mkdir ./packages/${{ github.event.inputs.package }}/.git

@@ -195,6 +195,13 @@ await myHybridStore.append({
   events: [eventA, eventB],
   snapshot: snapshotToSave,
 });
+
+// Register a listener to be notified when new events are appended.
+myHybridStore.onEventAppended((notification) => {
+  notification.entityName;
+  notification.entityId;
+  notification.events;
+});
 ```
 
 You can check this for more details [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
