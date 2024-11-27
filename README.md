@@ -1,7 +1,5 @@
 # Storevent
 
-![test](https://github.com/SachaCR/dyal/actions/workflows/test.yml/badge.svg)
-
 Storevent is a framework that simplify event sourcing. It makes it easy to build an entity reducer to aggregate your events into a state. It also provides different interfaces and packages that helps you build your event store.
 
 The base package `@storevent/stovevent` provides interfaces that you can use to build custom implementation for your event store.
