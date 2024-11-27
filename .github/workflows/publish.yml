@@ -127,7 +127,7 @@ jobs:
         run: |
           node --version
           npm --version
-          npm ci
+          npm install
 
       - name: Build
         run: npm run doc --workspace=@storevent/storevent

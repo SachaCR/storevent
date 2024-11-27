@@ -46,7 +46,7 @@ jobs:
         run: |
           node --version
           npm --version
-          npm ci
+          npm install
 
       - name: Run all tasks
         run: npm run all
