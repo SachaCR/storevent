@@ -1,7 +1,5 @@
 # Storevent Memory
 
-![test](https://github.com/SachaCR/dyal/actions/workflows/test.yml/badge.svg)
-
 In memory implementation of `@storevent/storevent` interfaces
 
 It provides an event store, a snapshot store and hybrid store implementation.

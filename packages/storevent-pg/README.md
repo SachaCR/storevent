@@ -1,7 +1,5 @@
 # Storevent Postgres
 
-![test](https://github.com/SachaCR/dyal/actions/workflows/test.yml/badge.svg)
-
 Postgres implementation of `@storevent/storevent` interfaces
 
 It provides an event store, a snapshot store and hybrid store implementation.
