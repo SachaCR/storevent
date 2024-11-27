@@ -30,7 +30,7 @@
     "cqrs"
   ],
   "dependencies": {
-    "@storevent/storevent": "0.1.1",
+    "@storevent/storevent": "0.1.2",
     "pg": "^8.13.0",
     "pg-format": "^1.0.4"
   },
