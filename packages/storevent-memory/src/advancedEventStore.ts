@@ -1,16 +1,43 @@
+import { InMemoryEventStore } from ".";
 import {
   JsonSerializable,
+  BasicEvent,
+  AdvancedEventStore,
   SnapshotData,
-  SnapshotStore,
 } from "@storevent/storevent";
 
-export class InMemorySnapshotStore<State extends JsonSerializable>
-  implements SnapshotStore<State>
+export class InMemoryAdvancedEventStore<
+    Event extends BasicEvent,
+    State extends JsonSerializable,
+  >
+  extends InMemoryEventStore<Event>
+  implements AdvancedEventStore<Event, State>
 {
   #snapshotMap: Map<string, SnapshotData<State>[]>;
 
-  constructor() {
+  constructor(entityName: string) {
+    super(entityName);
     this.#snapshotMap = new Map<string, SnapshotData<State>[]>();
+  }
+
+  async appendWithSnapshot(params: {
+    entityId: string;
+    events: Event[];
+    appendAfterOffset: number;
+    snapshot?: { state: State; version: number };
+  }): Promise<void> {
+    const { entityId, events, snapshot, appendAfterOffset } = params;
+    await super.append({ entityId, events, appendAfterOffset });
+
+    if (snapshot) {
+      await this.saveSnapshot({
+        entityId,
+        snapshot: snapshot.state,
+        version: snapshot.version,
+      });
+    }
+
+    return Promise.resolve();
   }
 
   getLastSnapshot(entityId: string): Promise<SnapshotData<State> | undefined> {

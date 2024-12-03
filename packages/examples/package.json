@@ -41,9 +41,11 @@
     "cqrs"
   ],
   "dependencies": {
+    "@fastify/cors": "^10.0.1",
     "@storevent/storevent": "*",
+    "@storevent/storevent-memory": "*",
     "@storevent/storevent-pg": "*",
-    "@storevent/storevent-memory": "*"
+    "fastify": "^5.1.0"
   },
   "engines": {
     "node": "20.18.0",

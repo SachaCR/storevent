@@ -1,21 +1,21 @@
-import { JsonSerializable, Storevent } from "../../";
+import { JsonSerializable, BasicEvent } from "../../";
 import { EntityReducer } from "../";
 
-export interface TestEventA extends Storevent {
+export interface TestEventA extends BasicEvent {
   name: "EventA";
   payload: {
     message: string;
   };
 }
 
-export interface TestEventB extends Storevent {
+export interface TestEventB extends BasicEvent {
   name: "EventB";
   payload: {
     message: string;
   };
 }
 
-export interface TestEventC extends Storevent {
+export interface TestEventC extends BasicEvent {
   name: "EventC";
   payload: {
     message: string;

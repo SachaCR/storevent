@@ -1,6 +1,5 @@
 export * from "./interfaces";
 export * from "./eventStore";
-export * from "./snapshotStore";
-export * from "./hybridStore";
+export * from "./advancedEventStore";
 export * from "./reducer";
 export * from "./errors";

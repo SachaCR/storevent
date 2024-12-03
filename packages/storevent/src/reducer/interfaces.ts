@@ -1,13 +1,13 @@
-import { JsonSerializable, Storevent } from "../interfaces";
+import { JsonSerializable, BasicEvent } from "../interfaces";
 
 export type EventReducer<
-  Event extends Storevent,
+  Event extends BasicEvent,
   State extends JsonSerializable,
 > = (params: { event: Event; state: State }) => State;
 
 export interface EntityReducerInterface<
   State extends JsonSerializable,
-  Event extends Storevent,
+  Event extends BasicEvent,
 > {
   entityName: string;
 
