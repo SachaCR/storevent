@@ -33,11 +33,14 @@ export class Account {
   }
 
   #updateState(event: AccountEvent) {
-    this.#state = this.#reducer.reduceEvents({
+    const newState = this.#reducer.reduceEvents({
       events: [event],
       state: this.#state,
       stateVersion: this.#version,
-    }).state;
+    });
+
+    this.#state = newState.state;
+    this.#version = newState.version;
   }
 
   open(params: { accountId: string }): AccountCreated {
@@ -99,6 +102,10 @@ export class Account {
   }
 
   getState() {
-    return this.#state;
+    return structuredClone(this.#state);
+  }
+
+  getVersion() {
+    return this.#version;
   }
 }

@@ -1,13 +1,8 @@
 import EventEmitter from "events";
 
-import {
-  AppendEventOptions,
-  EventStore,
-  Storevent,
-  WrongSequenceError,
-} from "@storevent/storevent";
+import { EventStore, BasicEvent, WrongOffsetError } from "@storevent/storevent";
 
-export class InMemoryEventStore<Event extends Storevent>
+export class InMemoryEventStore<Event extends BasicEvent>
   implements EventStore<Event>
 {
   #entityName: string;
@@ -24,25 +19,23 @@ export class InMemoryEventStore<Event extends Storevent>
     return this.#entityName;
   }
 
-  append(
-    params: {
-      entityId: string;
-      events: Event[];
-    },
-    options?: AppendEventOptions,
-  ): Promise<void> {
+  append(params: {
+    entityId: string;
+    events: Event[];
+    appendAfterOffset?: number;
+  }): Promise<void> {
     const { entityId, events } = params;
     const entityEvents = this.#eventMap.get(entityId) ?? [];
 
-    if (options?.appendAfterSequenceNumber !== undefined) {
-      const lastEntitySequence = entityEvents.length;
+    if (params.appendAfterOffset !== undefined) {
+      const lastEntityOffset = entityEvents.length;
 
-      if (options.appendAfterSequenceNumber !== lastEntitySequence) {
+      if (params.appendAfterOffset !== lastEntityOffset) {
         return Promise.reject(
-          new WrongSequenceError({
+          new WrongOffsetError({
             entityId,
             entityName: this.#entityName,
-            invalidSequence: options.appendAfterSequenceNumber,
+            invalidOffset: params.appendAfterOffset,
           }),
         );
       }
@@ -61,33 +54,33 @@ export class InMemoryEventStore<Event extends Storevent>
     return Promise.resolve();
   }
 
-  getEventsFromSequenceNumber(params: {
+  getEventsFromOffset(params: {
     entityId: string;
     sequenceNumber?: number;
-  }): Promise<{ events: Event[]; lastEventSequenceNumber: number }> {
+  }): Promise<{ events: Event[]; lastEventOffset: number }> {
     const { entityId, sequenceNumber } = params;
 
-    let sanitizedSequenceNumber = sequenceNumber ?? 0;
-    if (sanitizedSequenceNumber < 0) {
-      sanitizedSequenceNumber = 0;
+    let sanitizedOffset = sequenceNumber ?? 0;
+    if (sanitizedOffset < 0) {
+      sanitizedOffset = 0;
     }
 
-    const startingSequence = Math.floor(sanitizedSequenceNumber);
+    const startingOffset = Math.floor(sanitizedOffset);
 
     const entityEvents = this.#eventMap.get(entityId) ?? [];
 
-    const lastEntitySequence = entityEvents.length;
+    const lastEntityOffset = entityEvents.length;
 
-    const eventsFromSequence = entityEvents.slice(startingSequence);
+    const eventsFromOffset = entityEvents.slice(startingOffset);
 
-    const lastEventSequenceNumber = Math.min(
-      startingSequence + eventsFromSequence.length,
-      lastEntitySequence,
+    const lastEventOffset = Math.min(
+      startingOffset + eventsFromOffset.length,
+      lastEntityOffset,
     );
 
     return Promise.resolve({
-      events: eventsFromSequence,
-      lastEventSequenceNumber,
+      events: eventsFromOffset,
+      lastEventOffset,
     });
   }
 

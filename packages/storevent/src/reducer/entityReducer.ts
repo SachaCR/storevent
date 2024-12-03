@@ -1,7 +1,7 @@
 import {
   UnknownReducer,
   JsonSerializable,
-  Storevent,
+  BasicEvent,
   EntityReducerInterface,
   EventReducer,
 } from "..";
@@ -15,7 +15,7 @@ import {
 
 export class EntityReducer<
   State extends JsonSerializable,
-  Event extends Storevent,
+  Event extends BasicEvent,
 > implements EntityReducerInterface<State, Event>
 {
   #reducers: Map<Event["name"], EventReducer<Event, State>>;
@@ -52,10 +52,12 @@ export class EntityReducer<
      * The state of the entity.
      */
     state: State;
+
     /**
      * The events to reduce.
      */
     events: Event[];
+
     /**
      * The current version of the state.
      */
@@ -65,6 +67,7 @@ export class EntityReducer<
      * The new state of the entity.
      */
     state: State;
+
     /**
      * The new version of the entity.
      */

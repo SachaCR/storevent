@@ -6,7 +6,7 @@ describe("Component ConcurrencyError", () => {
       const error = new ConcurrencyError({
         entityId: "entityId",
         entityName: "Card",
-        sequenceInConflict: 56,
+        offsetInConflict: 56,
       });
 
       test("Then error name is StoreventError", () => {
@@ -21,13 +21,13 @@ describe("Component ConcurrencyError", () => {
         expect(error.details).toStrictEqual({
           entityId: "entityId",
           entityName: "Card",
-          sequenceInConflict: 56,
+          offsetInConflict: 56,
         });
       });
 
       test("Then error message match expected values", () => {
         expect(error.message).toStrictEqual(
-          "Concurrency error: Someone else added new events after this sequence number 56",
+          "Concurrency error: Someone else added new events after this offset 56",
         );
       });
     });

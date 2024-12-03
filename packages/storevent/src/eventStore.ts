@@ -1,20 +1,9 @@
-import { Storevent } from "./interfaces";
-
-/**
- * Options to append events.
- */
-export interface AppendEventOptions {
-  /**
-   * This options will make the append to fail if it detect duplicated event sequence number.
-   * This indicates that another process appended another event in parallel.
-   */
-  appendAfterSequenceNumber?: number;
-}
+import { BasicEvent } from "./interfaces";
 
 /**
  * Use this interface to implement an event store.
  */
-export interface EventStore<Event extends Storevent> {
+export interface EventStore<Event extends BasicEvent> {
   /**
    * The name of the entity that this event store is managing.
    */
@@ -25,38 +14,43 @@ export interface EventStore<Event extends Storevent> {
    * @param params - The parameters to append events.
    * @param options - The options to append events.
    */
-  append(
-    params: {
-      /**
-       * The ID of the entity.
-       */
-      entityId: string;
-      /**
-       * The events to append
-       */
-      events: Event[];
-    },
-    options?: AppendEventOptions,
-  ): Promise<void>;
-
-  /**
-   * Get the events from a specific sequence number.
-   * @param params - The parameters to get events.
-   */
-  getEventsFromSequenceNumber(params: {
+  append(params: {
     /**
      * The ID of the entity.
      */
     entityId: string;
+
     /**
-     * The sequence number to start fetching events. Default to 0.
+     * The events to append. It cannot be empty.
      */
-    sequenceNumber?: number;
-  }): Promise<{ events: Event[]; lastEventSequenceNumber: number }>;
+    events: Event[];
+
+    /**
+     * This options will make the append to fail if it detect duplicated event offset.
+     * This indicates that another process appended another event in parallel.
+     */
+    appendAfterOffset?: number;
+  }): Promise<void>;
+
+  /**
+   * Get the events from a specific offset.
+   * @param params - The parameters to get events.
+   */
+  getEventsFromOffset(params: {
+    /**
+     * The ID of the entity.
+     */
+    entityId: string;
+
+    /**
+     * The offset to start fetching events. Defaults to 0.
+     */
+    offset?: number;
+  }): Promise<{ events: Event[]; lastEventOffset: number }>;
 
   /**
    * You can use this method to listen to new events appended to the store. This is useful to implement projections or publish your events into a message broker.
-   * @param handler  - The handler to be called when new events are appended.
+   * @param handler - The handler to be called when new events are appended.
    */
   onEventAppended(
     handler: (event: {
