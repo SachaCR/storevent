@@ -2,41 +2,38 @@ import { Client, Pool, PoolClient } from "pg";
 import * as format from "pg-format";
 
 import {
-  AppendEventOptions,
   ConcurrencyError,
-  Storevent,
-  WrongSequenceError,
+  BasicEvent,
+  WrongOffsetError,
 } from "@storevent/storevent";
 
-import { getLastEventSequenceNumber } from "./getLastEventSequenceNumber";
+import { getLastEventOffset } from "./getLastEventOffset";
 
-export async function appendEvents<Event extends Storevent>(
-  params: {
-    entityId: string;
-    events: Event[];
-    tableName: string;
-    entityName: string;
-    client: PoolClient | Pool | Client;
-  },
-  options?: AppendEventOptions,
-): Promise<void> {
-  const { entityId, events, tableName, entityName, client } = params;
-  const appendAfterSequenceNumber = options?.appendAfterSequenceNumber;
+export async function appendEvents<Event extends BasicEvent>(params: {
+  entityId: string;
+  events: Event[];
+  tableName: string;
+  entityName: string;
+  client: PoolClient | Pool | Client;
+  appendAfterOffset?: number;
+}): Promise<void> {
+  const { entityId, events, tableName, entityName, client, appendAfterOffset } =
+    params;
 
   let lastEventSequence = 0;
 
-  lastEventSequence = await getLastEventSequenceNumber({
+  lastEventSequence = await getLastEventOffset({
     client,
     tableName,
     entityId: params.entityId,
   });
 
-  if (appendAfterSequenceNumber) {
-    if (appendAfterSequenceNumber !== lastEventSequence) {
-      throw new WrongSequenceError({
+  if (appendAfterOffset) {
+    if (appendAfterOffset !== lastEventSequence) {
+      throw new WrongOffsetError({
         entityId,
         entityName,
-        invalidSequence: appendAfterSequenceNumber,
+        invalidOffset: appendAfterOffset,
       });
     }
   }
@@ -57,7 +54,7 @@ export async function appendEvents<Event extends Storevent>(
   });
 
   const sanitizedQuery = format.default(
-    "INSERT INTO %I (entity_id, sequence, name, payload) VALUES %L",
+    "INSERT INTO %I (entity_id, event_offset, name, payload) VALUES %L",
     tableName,
     eventsData,
   );
@@ -72,8 +69,7 @@ export async function appendEvents<Event extends Storevent>(
         const concurrencyError = new ConcurrencyError({
           entityId,
           entityName,
-          sequenceInConflict:
-            options?.appendAfterSequenceNumber ?? lastEventSequence,
+          offsetInConflict: appendAfterOffset ?? lastEventSequence,
         });
 
         concurrencyError.cause = err;

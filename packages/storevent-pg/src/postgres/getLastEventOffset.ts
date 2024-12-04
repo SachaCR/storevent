@@ -1,7 +1,7 @@
 import { Client, Pool, PoolClient } from "pg";
 import * as format from "pg-format";
 
-export async function getLastEventSequenceNumber(params: {
+export async function getLastEventOffset(params: {
   entityId: string;
   tableName: string;
   client: PoolClient | Pool | Client;
@@ -9,17 +9,16 @@ export async function getLastEventSequenceNumber(params: {
   const { entityId, client, tableName } = params;
 
   const sanitizedCountQuery = format.default(
-    `SELECT COUNT(*) as "lastEventSequence" FROM %I WHERE entity_id = %L`,
+    `SELECT COUNT(*) as "lastEventOffset" FROM %I WHERE entity_id = %L`,
     tableName,
     entityId,
   );
 
-  const countResult = await client.query<{ lastEventSequence: string }>(
+  const countResult = await client.query<{ lastEventOffset: string }>(
     sanitizedCountQuery,
   );
 
-  const lastEventSequence =
-    parseInt(countResult.rows[0].lastEventSequence) || 0;
+  const lastEventOffset = parseInt(countResult.rows[0].lastEventOffset) || 0;
 
-  return lastEventSequence;
+  return lastEventOffset;
 }

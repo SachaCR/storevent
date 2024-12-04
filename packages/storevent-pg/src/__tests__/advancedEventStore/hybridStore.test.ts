@@ -1,20 +1,20 @@
 import config from "config";
 
-import { PGHybridStore } from "../..";
+import { PGAdvancedEventStore } from "../..";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore", () => {
-  describe("Given PGHybridStore ", () => {
-    const myPGStore = new PGHybridStore({
+describe("Component PGAdvancedEventStore", () => {
+  describe("Given PGAdvancedEventStore ", () => {
+    const myPGStore = new PGAdvancedEventStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     afterAll(async () => {
-      await myPGStore.stop();
+      await myPGStore.pgPool.end();
     });
 
     describe("When I read the event table name", () => {

@@ -5,9 +5,20 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 
 import { Account, AccountReducer } from "..";
-import { AccountInMemoryHybridStore } from "../in-memory/accountHybridStore";
+// import { AccountInMemoryAdvancedEventStore } from "../in-memory/accountAdvancedEventStore";
+import { AccountPGAdvancedEventStore } from "../postgres/accountAdvancedEventStore";
 
-const eventStore = new AccountInMemoryHybridStore();
+const eventStore = new AccountPGAdvancedEventStore({
+  database: {
+    host: "localhost",
+    name: "account-service",
+    port: 5432,
+    password: "admin",
+    user: "postgres",
+  },
+});
+
+// const eventStore = new AccountInMemoryAdvancedEventStore();
 
 const accountList: {
   accountId: string;
@@ -35,15 +46,20 @@ const fastify = Fastify({
 fastify.post("/accounts", async function handler() {
   const accountId = randomUUID();
   const account = new Account();
-  const accountCreatedEvent = account.open({ accountId });
+  const accountCreatedEvent = account.create({
+    accountId,
+    currency: "EUR",
+    holderName: "John Doe",
+  });
 
-  await eventStore.append({
+  await eventStore.appendWithSnapshot({
     entityId: accountId,
     events: [accountCreatedEvent],
     snapshot: {
       state: account.getState(),
-      version: 0,
+      version: 1,
     },
+    appendAfterOffset: 0,
   });
 
   return account.getState();
@@ -62,9 +78,9 @@ fastify.post<{
     return;
   }
 
-  const result = await eventStore.getEventsFromSequenceNumber({
+  const result = await eventStore.getEventsFromOffset({
     entityId: accountId,
-    sequenceNumber: snapshot.version,
+    offset: snapshot.version,
   });
 
   const currentState = new AccountReducer().reduceEvents({
@@ -98,13 +114,14 @@ fastify.post<{
     eventsToAppend.push(accountDebited);
   }
 
-  await eventStore.append({
+  await eventStore.appendWithSnapshot({
     entityId: accountId,
     events: eventsToAppend,
     snapshot: {
       state: account.getState(),
       version: account.getVersion(),
     },
+    appendAfterOffset: snapshot.version,
   });
 
   return account.getState();
@@ -122,9 +139,9 @@ fastify.get<{
     return;
   }
 
-  const result = await eventStore.getEventsFromSequenceNumber({
+  const result = await eventStore.getEventsFromOffset({
     entityId: accountId,
-    sequenceNumber: snapshot.version,
+    offset: snapshot.version,
   });
 
   const currentState = new AccountReducer().reduceEvents({
@@ -138,8 +155,9 @@ fastify.get<{
 
 fastify.get<{
   Params: { accountId: string };
-}>("/accounts", function handler() {
-  return accountList;
+}>("/accounts", async function handler() {
+  return await eventStore.listEntities();
+  // return accountList;
 });
 
 fastify.get<{
@@ -154,9 +172,9 @@ fastify.get<{
     return;
   }
 
-  const result = await eventStore.getEventsFromSequenceNumber({
+  const result = await eventStore.getEventsFromOffset({
     entityId: accountId,
-    sequenceNumber: 0,
+    offset: 0,
   });
 
   return result.events;
@@ -164,6 +182,8 @@ fastify.get<{
 
 async function runServer() {
   // Run the server!
+
+  await eventStore.initTable();
 
   await fastify.register(cors, {
     origin: "http://localhost:5173", // Allow only this origin

@@ -1,24 +1,15 @@
 import config from "config";
 import { Client } from "pg";
 
-import { WrongSequenceError } from "@storevent/storevent";
+import { WrongOffsetError } from "@storevent/storevent";
 
-import { PGHybridStore } from "../..";
-import { PGHybridStoreConfiguration } from "../../hybridStore/interfaces";
+import { PGAdvancedEventStore } from "../..";
+import { PGAdvancedEventStoreConfiguration } from "../../advancedEventStore/interfaces";
 
 const DATABASE_CONFIG =
-  config.get<PGHybridStoreConfiguration["database"]>("database");
+  config.get<PGAdvancedEventStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore.append()", () => {
-  beforeAll(async () => {
-    const myPGHybridStore = new PGHybridStore({
-      entityName: "test_entity",
-      database: DATABASE_CONFIG,
-    });
-    await myPGHybridStore.initTable();
-    await myPGHybridStore.stop();
-  });
-
+describe("Component PGAdvancedEventStore.append()", () => {
   describe("Given an entity id without any event stored", () => {
     const entityId = crypto.randomUUID();
 
@@ -39,7 +30,7 @@ describe("Component PGHybridStore.append()", () => {
       ];
 
       test("Then it successfully insert the events", async () => {
-        const myPGHybridStore = new PGHybridStore({
+        const myPGAdvancedEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
@@ -53,7 +44,7 @@ describe("Component PGHybridStore.append()", () => {
         });
 
         try {
-          await myPGHybridStore.append({
+          await myPGAdvancedEventStore.append({
             entityId,
             events: eventsToAppend,
           });
@@ -71,26 +62,26 @@ describe("Component PGHybridStore.append()", () => {
           expect(result.rows[0]).toStrictEqual({
             name: "event_1",
             payload: { value: 1 },
-            sequence: "1",
+            event_offset: "1",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[1]).toStrictEqual({
             name: "event_2",
             payload: { value: 2 },
-            sequence: "2",
+            event_offset: "2",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[2]).toStrictEqual({
             name: "event_3",
             payload: { value: 3 },
-            sequence: "3",
+            event_offset: "3",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGHybridStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
           await client.end();
         }
       });
@@ -122,7 +113,7 @@ describe("Component PGHybridStore.append()", () => {
       };
 
       test("Then it successfully insert the events and the snapshot", async () => {
-        const myPGHybridStore = new PGHybridStore({
+        const myPGAdvancedEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
@@ -136,10 +127,11 @@ describe("Component PGHybridStore.append()", () => {
         });
 
         try {
-          await myPGHybridStore.append({
+          await myPGAdvancedEventStore.appendWithSnapshot({
             entityId,
             events: eventsToAppend,
             snapshot,
+            appendAfterOffset: 0,
           });
 
           await client.connect();
@@ -155,21 +147,21 @@ describe("Component PGHybridStore.append()", () => {
           expect(result.rows[0]).toStrictEqual({
             name: "event_1",
             payload: { value: 1 },
-            sequence: "1",
+            event_offset: "1",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[1]).toStrictEqual({
             name: "event_2",
             payload: { value: 2 },
-            sequence: "2",
+            event_offset: "2",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[2]).toStrictEqual({
             name: "event_3",
             payload: { value: 3 },
-            sequence: "3",
+            event_offset: "3",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
@@ -184,6 +176,7 @@ describe("Component PGHybridStore.append()", () => {
           expect(resultSnapshot.rows).toHaveLength(1);
           expect(resultSnapshot.rows[0]).toStrictEqual({
             entity_id: entityId,
+            is_latest: true,
             state: {
               status: "active",
             },
@@ -192,7 +185,7 @@ describe("Component PGHybridStore.append()", () => {
             updated_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGHybridStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
           await client.end();
         }
       });
@@ -201,13 +194,13 @@ describe("Component PGHybridStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGHybridStore = new PGHybridStore({
+    const myPGAdvancedEventStore = new PGAdvancedEventStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.append({
+      await myPGAdvancedEventStore.append({
         entityId,
         events: [
           {
@@ -248,15 +241,11 @@ describe("Component PGHybridStore.append()", () => {
         });
 
         try {
-          await myPGHybridStore.append(
-            {
-              entityId,
-              events: newEventsToAppend,
-            },
-            {
-              appendAfterSequenceNumber: 3,
-            },
-          );
+          await myPGAdvancedEventStore.append({
+            entityId,
+            events: newEventsToAppend,
+            appendAfterOffset: 3,
+          });
 
           await client.connect();
 
@@ -271,40 +260,40 @@ describe("Component PGHybridStore.append()", () => {
           expect(result.rows[0]).toStrictEqual({
             name: "event_1",
             payload: { value: 1 },
-            sequence: "1",
+            event_offset: "1",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[1]).toStrictEqual({
             name: "event_2",
             payload: { value: 2 },
-            sequence: "2",
+            event_offset: "2",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[2]).toStrictEqual({
             name: "event_3",
             payload: { value: 3 },
-            sequence: "3",
+            event_offset: "3",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[3]).toStrictEqual({
             name: "event_4",
             payload: { value: 4 },
-            sequence: "4",
+            event_offset: "4",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
           expect(result.rows[4]).toStrictEqual({
             name: "event_5",
             payload: { value: 5 },
-            sequence: "5",
+            event_offset: "5",
             entity_id: entityId,
             appended_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGHybridStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
           await client.end();
         }
       });
@@ -313,13 +302,13 @@ describe("Component PGHybridStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGHybridStore = new PGHybridStore({
+    const myPGAdvancedEventStore = new PGAdvancedEventStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.append({
+      await myPGAdvancedEventStore.append({
         entityId,
         events: [
           {
@@ -354,30 +343,26 @@ describe("Component PGHybridStore.append()", () => {
         let error;
 
         try {
-          await myPGHybridStore.append(
-            {
-              entityId,
-              events: newEventsToAppend,
-            },
-            {
-              appendAfterSequenceNumber: 56,
-            },
-          );
+          await myPGAdvancedEventStore.append({
+            entityId,
+            events: newEventsToAppend,
+            appendAfterOffset: 56,
+          });
         } catch (err: unknown) {
-          if (err instanceof WrongSequenceError) {
+          if (err instanceof WrongOffsetError) {
             error = err;
 
             expect(err.message).toStrictEqual(
-              "Wrong sequence error: event must be appended with a continuous sequence number 56",
+              "Wrong offset error: event must be appended with a continuous offset number 56",
             );
-            expect(err.code).toStrictEqual("WRONG_SEQUENCE_ERROR");
+            expect(err.code).toStrictEqual("WRONG_OFFSET_ERROR");
             expect(err.name).toStrictEqual("StoreventError");
             expect(err.details?.entityId).toStrictEqual(entityId);
             expect(err.details?.entityName).toStrictEqual("test_entity");
-            expect(err.details?.invalidSequence).toStrictEqual(56);
+            expect(err.details?.invalidOffset).toStrictEqual(56);
           }
         } finally {
-          await myPGHybridStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
         }
 
         expect(error).toBeDefined();
@@ -387,13 +372,13 @@ describe("Component PGHybridStore.append()", () => {
 
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGHybridStore = new PGHybridStore({
+    const myPGAdvancedEventStore = new PGAdvancedEventStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGHybridStore.append({
+      await myPGAdvancedEventStore.append({
         entityId,
         events: [
           {
@@ -429,29 +414,25 @@ describe("Component PGHybridStore.append()", () => {
         let error;
 
         try {
-          await myPGHybridStore.append(
-            {
-              entityId,
-              events: newEventsToAppend,
-            },
-            {
-              appendAfterSequenceNumber: conflictingSequence,
-            },
-          );
+          await myPGAdvancedEventStore.append({
+            entityId,
+            events: newEventsToAppend,
+            appendAfterOffset: conflictingSequence,
+          });
         } catch (err: unknown) {
-          if (err instanceof WrongSequenceError) {
+          if (err instanceof WrongOffsetError) {
             error = err;
             expect(err.message).toStrictEqual(
-              "Wrong sequence error: event must be appended with a continuous sequence number 2",
+              "Wrong offset error: event must be appended with a continuous offset number 2",
             );
-            expect(err.code).toStrictEqual("WRONG_SEQUENCE_ERROR");
+            expect(err.code).toStrictEqual("WRONG_OFFSET_ERROR");
             expect(err.name).toStrictEqual("StoreventError");
             expect(err.details?.entityId).toStrictEqual(entityId);
             expect(err.details?.entityName).toStrictEqual("test_entity");
-            expect(err.details?.invalidSequence).toStrictEqual(2);
+            expect(err.details?.invalidOffset).toStrictEqual(2);
           }
         } finally {
-          await myPGHybridStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
         }
 
         expect(error).toBeDefined();

@@ -10,6 +10,7 @@ export async function createSnapshotTable(
     entity_id UUID NOT NULL,
     version BIGINT NOT NULL,
     state JSON NOT NULL,
+    is_latest BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY(entity_id, version)

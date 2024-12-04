@@ -1,26 +1,25 @@
 import EventEmitter from "events";
 import { Pool } from "pg";
 
-import {
-  AppendEventOptions,
-  EventStore,
-  Storevent,
-} from "@storevent/storevent";
+import { EventStore, BasicEvent } from "@storevent/storevent";
 
 import { wrapError } from "../errors/wrapError";
-import { appendEvents, createEventTable } from "../postgres/";
-import { getEventsFromSequenceNumber } from "../postgres/getEventsFromSequenceNumber";
+import {
+  appendEvents,
+  createEventTable,
+  getEventsFromOffset,
+} from "../postgres";
 
 import { PGEventStoreConfiguration } from "./interfaces";
 export type { PGEventStoreConfiguration } from "./interfaces";
 
-export class PGEventStore<Event extends Storevent>
+export class PGEventStore<Event extends BasicEvent>
   implements EventStore<Event>
 {
   #entityName: string;
   #tableName: string;
-  #pgPool: Pool;
   #eventEmitter: EventEmitter;
+  #pgPool: Pool;
 
   constructor(configuration: PGEventStoreConfiguration) {
     const { entityName, tableName } = configuration;
@@ -45,12 +44,16 @@ export class PGEventStore<Event extends Storevent>
     return this.#tableName;
   }
 
-  async stop() {
-    await this.#pgPool.end();
+  get pgPool(): Pool {
+    return this.#pgPool;
+  }
+
+  get eventEmitter(): EventEmitter {
+    return this.#eventEmitter;
   }
 
   async initTable(): Promise<void> {
-    const pool = this.#pgPool;
+    const pool = this.pgPool;
 
     try {
       await createEventTable(this.#tableName, pool);
@@ -69,21 +72,20 @@ export class PGEventStore<Event extends Storevent>
     this.#eventEmitter.on("EventAppended", handler);
   }
 
-  async append(
-    params: { entityId: string; events: Event[] },
-    options?: AppendEventOptions,
-  ): Promise<void> {
+  async append(params: {
+    entityId: string;
+    events: Event[];
+    appendAfterOffset?: number;
+  }): Promise<void> {
     try {
-      await appendEvents(
-        {
-          client: this.#pgPool,
-          entityId: params.entityId,
-          events: params.events,
-          tableName: this.#tableName,
-          entityName: this.#entityName,
-        },
-        options,
-      );
+      await appendEvents({
+        client: this.pgPool,
+        entityId: params.entityId,
+        events: params.events,
+        tableName: this.#tableName,
+        entityName: this.#entityName,
+        appendAfterOffset: params.appendAfterOffset,
+      });
 
       if (this.#eventEmitter.listenerCount("EventAppended") > 0) {
         this.#eventEmitter.emit("EventAppended", {
@@ -97,15 +99,15 @@ export class PGEventStore<Event extends Storevent>
     }
   }
 
-  async getEventsFromSequenceNumber(params: {
+  async getEventsFromOffset(params: {
     entityId: string;
-    sequenceNumber?: number;
-  }): Promise<{ events: Event[]; lastEventSequenceNumber: number }> {
+    offset?: number;
+  }): Promise<{ events: Event[]; lastEventOffset: number }> {
     try {
-      return await getEventsFromSequenceNumber({
+      return await getEventsFromOffset({
         entityId: params.entityId,
-        sequenceNumber: params.sequenceNumber,
-        client: this.#pgPool,
+        offset: params.offset,
+        client: this.pgPool,
         tableName: this.#tableName,
       });
     } catch (err) {

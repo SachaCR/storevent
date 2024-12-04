@@ -1,7 +1,7 @@
 import { JsonSerializable } from "@storevent/storevent";
 import { Client, Pool, PoolClient } from "pg";
 import * as format from "pg-format";
-import { SnapshotFromDB } from "../snapshotStore/interfaces";
+import { SnapshotFromDB } from "../advancedEventStore/interfaces";
 
 export async function saveSnapshot<State extends JsonSerializable>(params: {
   entityId: string;
@@ -35,13 +35,25 @@ export async function saveSnapshot<State extends JsonSerializable>(params: {
     }
   }
 
+  const sanitizedUpdateLatestQuery = format.default(
+    `
+      UPDATE %I
+        SET is_latest = false
+        WHERE entity_id = %L
+    `,
+    tableName,
+    entityId,
+  );
+
+  await client.query<SnapshotFromDB>(sanitizedUpdateLatestQuery);
+
   const sanitizedInsertQuery = format.default(
     `
-        INSERT INTO %I (entity_id, version, state)
-        VALUES %L
-      `,
+      INSERT INTO %I (entity_id, version, state, is_latest)
+      VALUES %L
+    `,
     tableName,
-    [[entityId, version, JSON.stringify(params.snapshot)]],
+    [[entityId, version, JSON.stringify(params.snapshot), true]],
   );
 
   await client.query<SnapshotFromDB>(sanitizedInsertQuery);

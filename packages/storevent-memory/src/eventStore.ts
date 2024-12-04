@@ -56,11 +56,11 @@ export class InMemoryEventStore<Event extends BasicEvent>
 
   getEventsFromOffset(params: {
     entityId: string;
-    sequenceNumber?: number;
+    offset?: number;
   }): Promise<{ events: Event[]; lastEventOffset: number }> {
-    const { entityId, sequenceNumber } = params;
+    const { entityId, offset } = params;
 
-    let sanitizedOffset = sequenceNumber ?? 0;
+    let sanitizedOffset = offset ?? 0;
     if (sanitizedOffset < 0) {
       sanitizedOffset = 0;
     }

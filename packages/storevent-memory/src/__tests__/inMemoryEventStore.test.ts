@@ -23,12 +23,12 @@ describe("Component InMemoryEventStore", () => {
           events: [buildTestEvent("EventC"), buildTestEvent("EventB")],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId,
         });
 
         expect(eventStore.entityName).toStrictEqual("TestEntity");
-        expect(result.lastEventSequenceNumber).toStrictEqual(4);
+        expect(result.lastEventOffset).toStrictEqual(4);
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventA",
           "EventB",
@@ -67,20 +67,20 @@ describe("Component InMemoryEventStore", () => {
           ],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId,
-          sequenceNumber: 2,
+          offset: 2,
         });
 
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventC",
           "EventB",
         ]);
-        expect(result.lastEventSequenceNumber).toStrictEqual(4);
+        expect(result.lastEventOffset).toStrictEqual(4);
 
-        const resultEntity2 = await eventStore.getEventsFromSequenceNumber({
+        const resultEntity2 = await eventStore.getEventsFromOffset({
           entityId: entityId2,
-          sequenceNumber: 2,
+          offset: 2,
         });
 
         expect(resultEntity2.events.map((event) => event.name)).toStrictEqual([
@@ -88,7 +88,7 @@ describe("Component InMemoryEventStore", () => {
           "EventB",
           "EventC",
         ]);
-        expect(resultEntity2.lastEventSequenceNumber).toStrictEqual(5);
+        expect(resultEntity2.lastEventOffset).toStrictEqual(5);
       });
     });
   });
@@ -110,15 +110,11 @@ describe("Component InMemoryEventStore", () => {
             ],
           });
 
-          await eventStore.append(
-            {
-              entityId,
-              events: [buildTestEvent("EventA")],
-            },
-            {
-              appendAfterSequenceNumber: 4,
-            },
-          );
+          await eventStore.append({
+            entityId,
+            events: [buildTestEvent("EventA")],
+            appendAfterOffset: 4,
+          });
         });
       });
 
@@ -138,17 +134,13 @@ describe("Component InMemoryEventStore", () => {
           });
 
           await expect(
-            eventStore.append(
-              {
-                entityId,
-                events: [buildTestEvent("EventA")],
-              },
-              {
-                appendAfterSequenceNumber: 2,
-              },
-            ),
+            eventStore.append({
+              entityId,
+              events: [buildTestEvent("EventA")],
+              appendAfterOffset: 2,
+            }),
           ).rejects.toThrow(
-            "Wrong sequence error: event must be appended with a continuous sequence number 2",
+            "Wrong offset error: event must be appended with a continuous offset number 2",
           );
         });
       });
@@ -166,11 +158,11 @@ describe("Component InMemoryEventStore", () => {
           events: [buildTestEvent("EventA"), buildTestEvent("EventB")],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId: unknownEntityId,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(0);
+        expect(result.lastEventOffset).toStrictEqual(0);
         expect(result.events.map((event) => event.name)).toStrictEqual([]);
       });
     });
@@ -188,14 +180,12 @@ describe("Component InMemoryEventStore", () => {
           events: [buildTestEvent("EventA"), buildTestEvent("EventB")],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId: entityId,
-          sequenceNumber: 100,
+          offset: 100,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(
-          lastSequenceExpected,
-        );
+        expect(result.lastEventOffset).toStrictEqual(lastSequenceExpected);
         expect(result.events.map((event) => event.name)).toStrictEqual([]);
       });
     });
@@ -213,14 +203,12 @@ describe("Component InMemoryEventStore", () => {
           events: [buildTestEvent("EventA"), buildTestEvent("EventB")],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId: entityId,
-          sequenceNumber: -32,
+          offset: -32,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(
-          lastSequenceExpected,
-        );
+        expect(result.lastEventOffset).toStrictEqual(lastSequenceExpected);
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventA",
           "EventB",
@@ -246,14 +234,12 @@ describe("Component InMemoryEventStore", () => {
           ],
         });
 
-        const result = await eventStore.getEventsFromSequenceNumber({
+        const result = await eventStore.getEventsFromOffset({
           entityId: entityId,
-          sequenceNumber: 1.3,
+          offset: 1.3,
         });
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(
-          lastSequenceExpected,
-        );
+        expect(result.lastEventOffset).toStrictEqual(lastSequenceExpected);
         expect(result.events.map((event) => event.name)).toStrictEqual([
           "EventB",
           "EventC",

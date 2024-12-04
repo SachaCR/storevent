@@ -1,7 +1,7 @@
 import { JsonSerializable, SnapshotData } from "@storevent/storevent";
 import { Client, Pool, PoolClient } from "pg";
 import * as format from "pg-format";
-import { SnapshotFromDB } from "../snapshotStore/interfaces";
+import { SnapshotFromDB } from "../advancedEventStore/interfaces";
 
 export async function getSnapshot<State extends JsonSerializable>(params: {
   entityId: string;

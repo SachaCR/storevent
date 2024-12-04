@@ -1,7 +1,7 @@
 import { JsonSerializable, SnapshotData } from "@storevent/storevent";
 import { Client, Pool, PoolClient } from "pg";
 import * as format from "pg-format";
-import { SnapshotFromDB } from "../snapshotStore/interfaces";
+import { SnapshotFromDB } from "../advancedEventStore/interfaces";
 
 export async function getLastSnapshot<State extends JsonSerializable>(params: {
   entityId: string;
@@ -11,7 +11,7 @@ export async function getLastSnapshot<State extends JsonSerializable>(params: {
   const { entityId, client, tableName } = params;
 
   const sanitizedCountQuery = format.default(
-    `SELECT * FROM %I WHERE entity_id = %L ORDER BY version DESC LIMIT 1`,
+    `SELECT * FROM %I WHERE entity_id = %L AND is_latest = true`,
     tableName,
     entityId,
   );

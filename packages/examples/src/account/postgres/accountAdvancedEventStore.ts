@@ -1,7 +1,7 @@
-import { PGHybridStore } from "@storevent/storevent-pg";
+import { PGAdvancedEventStore } from "@storevent/storevent-pg";
 import { AccountEvent, AccountState } from "../interfaces";
 
-export class AccountPGHybridStore extends PGHybridStore<
+export class AccountPGAdvancedEventStore extends PGAdvancedEventStore<
   AccountEvent,
   AccountState
 > {

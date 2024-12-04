@@ -1,6 +1,5 @@
 export * from "./eventStore";
-export * from "./snapshotStore";
-export * from "./hybridStore";
+export * from "./advancedEventStore";
 
 export * from "./errors/pgError";
 export * from "./errors/unexpectedError";

@@ -5,11 +5,10 @@ import { PGEventStoreConfiguration } from "@storevent/storevent-pg";
 
 import { Account } from "..";
 import { AccountReducer } from "../accountReducer";
-import { AccountCreated, AccountCredited, AccountDebited } from "..";
+import { AccountCreated, AccountCredited } from "..";
 
 import { AccountInMemoryEventStore } from "../in-memory/accountEventStore";
-import { AccountInMemorySnapshotStore } from "../in-memory/accountSnapshotStore";
-import { AccountInMemoryHybridStore } from "../in-memory/accountHybridStore";
+import { AccountInMemoryAdvancedEventStore } from "../in-memory/accountAdvancedEventStore";
 
 import { AccountPGEventStore } from "../postgres/accountEventStore";
 
@@ -43,25 +42,32 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
 
     afterAll(async () => {
       if (storeToTest.type === "postgres") {
-        await storeToTest.store.stop();
+        await storeToTest.store.pgPool.end();
       }
     });
 
     test("Open an account ", async () => {
       const accountId = randomUUID();
+      const currency = "EUR";
+      const holderName = "John Doe";
+
       const accountEventStore = storeToTest.store;
 
       const account = new Account();
-      const accountCreatedEvent = account.open({ accountId });
+      const accountCreatedEvent = account.create({
+        accountId,
+        currency,
+        holderName,
+      });
 
       await accountEventStore.append({
         entityId: accountId,
         events: [accountCreatedEvent],
       });
 
-      const events = await accountEventStore.getEventsFromSequenceNumber({
+      const events = await accountEventStore.getEventsFromOffset({
         entityId: accountId,
-        sequenceNumber: 0,
+        offset: 0,
       });
 
       expect(events.events.length).toStrictEqual(1);
@@ -70,29 +76,34 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         payload: {
           accountId,
           status: "OPEN",
+          holderName: "John Doe",
           currency: "EUR",
           balance: 0,
         },
       });
-      expect(events.lastEventSequenceNumber).toStrictEqual(1);
+      expect(events.lastEventOffset).toStrictEqual(1);
     });
 
     test("Credit then debit an account ", async () => {
       const accountId = randomUUID();
+      const currency = "EUR";
+      const holderName = "John Doe";
       const accountEventStore = storeToTest.store;
 
-      const accountCreatedEvent = new Account().open({ accountId });
+      const accountCreatedEvent = new Account().create({
+        accountId,
+        currency,
+        holderName,
+      });
       await accountEventStore.append({
         entityId: accountId,
         events: [accountCreatedEvent],
       });
 
-      const accountEvents = await accountEventStore.getEventsFromSequenceNumber(
-        {
-          entityId: accountId,
-          sequenceNumber: 0,
-        },
-      );
+      const accountEvents = await accountEventStore.getEventsFromOffset({
+        entityId: accountId,
+        offset: 0,
+      });
 
       expect(accountEvents.events.length).toStrictEqual(1);
       expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
@@ -113,9 +124,10 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         currency: "EUR",
       });
 
-      expect(account.getState()).toStrictEqual({
-        accountId: accountId,
+      expect(account.getState()).toEqual({
+        accountId,
         balance: 123,
+        holderName: "John Doe",
         currency: "EUR",
         status: "OPEN",
       });
@@ -125,9 +137,10 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         currency: "EUR",
       });
 
-      expect(account.getState()).toStrictEqual({
-        accountId: accountId,
+      expect(account.getState()).toEqual({
+        accountId,
         balance: 110,
+        holderName: "John Doe",
         currency: "EUR",
         status: "OPEN",
       });
@@ -137,11 +150,10 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         events: [creditEvent, debitEvent],
       });
 
-      const accountEventList =
-        await accountEventStore.getEventsFromSequenceNumber({
-          entityId: accountId,
-          sequenceNumber: 0,
-        });
+      const accountEventList = await accountEventStore.getEventsFromOffset({
+        entityId: accountId,
+        offset: 0,
+      });
 
       expect(accountEventList.events.length).toStrictEqual(3);
       expect(accountEventList.events.map((event) => event.name)).toStrictEqual([
@@ -150,7 +162,7 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         "AccountDebited",
       ]);
 
-      expect(accountEventList.lastEventSequenceNumber).toStrictEqual(3);
+      expect(accountEventList.lastEventOffset).toStrictEqual(3);
 
       const newState = new AccountReducer().reduceEvents({
         events: accountEventList.events,
@@ -158,24 +170,28 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         stateVersion: 0,
       });
 
-      expect(newState.state).toStrictEqual(account.getState());
+      expect(newState.state).toEqual(account.getState());
     });
 
     test("Detect concurrency", async () => {
       const accountId = randomUUID();
+      const currency = "EUR";
+      const holderName = "John Doe";
       const accountEventStore = storeToTest.store;
 
-      const accountCreatedEvent = new Account().open({ accountId });
+      const accountCreatedEvent = new Account().create({
+        accountId,
+        currency,
+        holderName,
+      });
       await accountEventStore.append({
         entityId: accountId,
         events: [accountCreatedEvent],
       });
 
-      const accountEvents = await accountEventStore.getEventsFromSequenceNumber(
-        {
-          entityId: accountId,
-        },
-      );
+      const accountEvents = await accountEventStore.getEventsFromOffset({
+        entityId: accountId,
+      });
 
       expect(accountEvents.events.length).toStrictEqual(1);
       expect(accountEvents.events[0].name).toStrictEqual("AccountCreated");
@@ -199,120 +215,34 @@ describe.each(storesToTest)(`Component AccountEventStore`, (storeToTest) => {
         currency: "EUR",
       });
 
-      await accountEventStore.append(
-        { entityId: accountId, events: [creditEvent] },
-        {
-          appendAfterSequenceNumber: 1,
-        },
-      );
+      await accountEventStore.append({
+        entityId: accountId,
+        events: [creditEvent],
+        appendAfterOffset: 1,
+      });
 
       await expect(
-        accountEventStore.append(
-          { entityId: accountId, events: [creditEventInParallel] },
-          {
-            appendAfterSequenceNumber: 1,
-          },
-        ),
+        accountEventStore.append({
+          entityId: accountId,
+          events: [creditEventInParallel],
+          appendAfterOffset: 1,
+        }),
       ).rejects.toThrow(
-        "Wrong sequence error: event must be appended with a continuous sequence number 1",
+        "Wrong offset error: event must be appended with a continuous offset number 1",
       );
     });
   });
 });
 
-describe("Component AccountSnapshotStore", () => {
-  const accountSnapshotStore = new AccountInMemorySnapshotStore();
-
-  test("Store and retrieve snapshots", async () => {
-    const accountId = randomUUID();
-    const accountCreatedEvent: AccountCreated = {
-      name: "AccountCreated",
-      payload: {
-        accountId,
-        status: "OPEN",
-        currency: "EUR",
-        balance: 0,
-      },
-    };
-
-    const accountCreditedEvent: AccountCredited = {
-      name: "AccountCredited",
-      payload: { amount: 123, currency: "EUR" },
-    };
-
-    const result = new AccountReducer().reduceEvents({
-      events: [accountCreatedEvent, accountCreditedEvent],
-      state: Account.initialState(),
-      stateVersion: 0,
-    });
-
-    const accountState = result.state;
-    const accountVersion = result.version;
-
-    await accountSnapshotStore.saveSnapshot({
-      entityId: accountId,
-      snapshot: accountState,
-      version: accountVersion,
-    });
-
-    const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
-
-    if (snapshot1 === undefined) {
-      throw new Error("Snapshot1 not found");
-    }
-
-    expect(snapshot1.state).toStrictEqual(accountState);
-    expect(snapshot1.version).toStrictEqual(accountVersion);
-
-    const accountDebitedEvent: AccountDebited = {
-      name: "AccountDebited",
-      payload: { amount: 12, currency: "EUR" },
-    };
-
-    const newAccountState = new AccountReducer().reduceEvents({
-      events: [accountDebitedEvent],
-      state: accountState,
-      stateVersion: accountVersion,
-    });
-
-    await accountSnapshotStore.saveSnapshot({
-      entityId: accountId,
-      snapshot: newAccountState.state,
-      version: newAccountState.version,
-    });
-
-    const snapshot2 = await accountSnapshotStore.getLastSnapshot(accountId);
-
-    if (snapshot2 === undefined) {
-      throw new Error("Snapshot2 not found");
-    }
-
-    expect(snapshot2.state).toStrictEqual(newAccountState.state);
-    expect(snapshot2.version).toStrictEqual(newAccountState.version);
-
-    const snapshotFound = await accountSnapshotStore.getSnapshot({
-      entityId: accountId,
-      version: accountVersion,
-    });
-
-    if (snapshotFound === undefined) {
-      throw new Error("Snapshot not found");
-    }
-
-    expect(snapshotFound).toBeDefined();
-    expect(snapshotFound.state).toStrictEqual(accountState);
-    expect(snapshotFound.version).toStrictEqual(accountVersion);
-  });
-});
-
-describe("Component AccountHybridStore", () => {
-  const accountSnapshotStore = new AccountInMemoryHybridStore();
+describe("Component AccountInMemoryAdvancedEventStore", () => {
+  const accountAdvancedEventStore = new AccountInMemoryAdvancedEventStore();
 
   test("Store and retrieve snapshots", async () => {
     const accountId = "1234";
     const accountCreatedEvent: AccountCreated = {
       name: "AccountCreated",
       payload: {
+        holderName: "John Doe",
         accountId,
         status: "OPEN",
         currency: "EUR",
@@ -334,13 +264,14 @@ describe("Component AccountHybridStore", () => {
     const accountState = result.state;
     const accountVersion = result.version;
 
-    await accountSnapshotStore.saveSnapshot({
+    await accountAdvancedEventStore.saveSnapshot({
       entityId: accountId,
       snapshot: accountState,
       version: accountVersion,
     });
 
-    const snapshot1 = await accountSnapshotStore.getLastSnapshot(accountId);
+    const snapshot1 =
+      await accountAdvancedEventStore.getLastSnapshot(accountId);
 
     if (snapshot1 === undefined) {
       throw new Error("Snapshot1 not found");
@@ -349,7 +280,7 @@ describe("Component AccountHybridStore", () => {
     expect(snapshot1.state).toStrictEqual(accountState);
     expect(snapshot1.version).toStrictEqual(accountVersion);
 
-    const undefinedSnapshot = await accountSnapshotStore.getSnapshot({
+    const undefinedSnapshot = await accountAdvancedEventStore.getSnapshot({
       entityId: accountId,
       version: 34,
     });

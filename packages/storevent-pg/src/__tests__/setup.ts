@@ -1,13 +1,13 @@
 import config from "config";
 import { Client } from "pg";
 import { PGEventStoreConfiguration } from "../eventStore/interfaces";
-import { PGHybridStore } from "../hybridStore";
+import { PGAdvancedEventStore } from "../advancedEventStore";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
 export default async function setupTestDB() {
-  const hybridStore = new PGHybridStore({
+  const advancedStore = new PGAdvancedEventStore({
     database: DATABASE_CONFIG,
     entityName: "test_entity",
   });
@@ -21,12 +21,12 @@ export default async function setupTestDB() {
   });
 
   try {
-    await hybridStore.initTable();
+    await advancedStore.initTable();
     await client.connect();
     await client.query(`TRUNCATE TABLE test_entity_events`);
     await client.query(`TRUNCATE TABLE test_entity_snapshots`);
   } finally {
-    await hybridStore.stop();
+    await advancedStore.pgPool.end();
     await client.end();
   }
 }
