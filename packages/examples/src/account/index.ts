@@ -25,9 +25,10 @@ export class Account {
 
   static initialState(): AccountState {
     return {
-      accountId: "VOID",
-      status: "VOID",
-      currency: "VOID",
+      holderName: "",
+      accountId: "",
+      status: "OPEN",
+      currency: "",
       balance: 0,
     };
   }
@@ -43,16 +44,21 @@ export class Account {
     this.#version = newState.version;
   }
 
-  open(params: { accountId: string }): AccountCreated {
-    const accountId = params.accountId;
+  create(params: {
+    holderName: string;
+    accountId: string;
+    currency: "EUR" | "USD";
+  }): AccountCreated {
+    const { accountId, currency, holderName } = params;
 
     const event: AccountCreated = {
       name: "AccountCreated",
       payload: {
         accountId,
+        holderName,
         status: "OPEN",
+        currency,
         balance: 0,
-        currency: "EUR",
       },
     };
 
@@ -102,6 +108,16 @@ export class Account {
   }
 
   getState() {
+    // If the version is 0, it means there was no events on this entity.
+    // the state is the initial empty state.
+    // We don't want to return it as the entity has not been created yet.
+    // We prefer to throw rather than return undefined or empty state that could cause bugs.
+    if (this.#version === 0) {
+      throw new Error(
+        "Entity not initialized, please use the account.create() method to set the state.",
+      );
+    }
+
     return structuredClone(this.#state);
   }
 
