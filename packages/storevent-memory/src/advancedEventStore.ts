@@ -24,18 +24,16 @@ export class InMemoryAdvancedEventStore<
     entityId: string;
     events: Event[];
     appendAfterOffset: number;
-    snapshot?: { state: State; version: number };
+    snapshot: { state: State; version: number };
   }): Promise<void> {
     const { entityId, events, snapshot, appendAfterOffset } = params;
     await super.append({ entityId, events, appendAfterOffset });
 
-    if (snapshot) {
-      await this.saveSnapshot({
-        entityId,
-        snapshot: snapshot.state,
-        version: snapshot.version,
-      });
-    }
+    await this.saveSnapshot({
+      entityId,
+      snapshot: snapshot.state,
+      version: snapshot.version,
+    });
 
     return Promise.resolve();
   }

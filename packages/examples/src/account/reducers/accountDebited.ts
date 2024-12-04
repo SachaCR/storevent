@@ -7,6 +7,7 @@ export function applyAccountDebitedEvent(params: {
   const { state, event } = params;
 
   return {
+    holderName: state.holderName,
     accountId: state.accountId,
     balance: state.balance - event.payload.amount,
     currency: state.currency,
