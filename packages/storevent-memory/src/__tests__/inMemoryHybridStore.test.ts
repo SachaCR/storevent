@@ -5,43 +5,45 @@ import {
   TestState,
 } from "./testEvents";
 
-import { InMemoryHybridStore } from "../";
+import { InMemoryAdvancedEventStore } from "../";
 
-describe("Component InMemoryHybridStore", () => {
+describe("Component InMemoryAdvancedEventStore", () => {
   describe("Given a hybrid store", () => {
-    const testEntityHybridStore = new InMemoryHybridStore<TestEvent, TestState>(
-      "TestEntity",
-    );
+    const testAdvancedEventStore = new InMemoryAdvancedEventStore<
+      TestEvent,
+      TestState
+    >("TestEntity");
 
     describe("When I read store entity name", () => {
       test("Then it returns expected entity name", () => {
-        const entityName = testEntityHybridStore.entityName;
+        const entityName = testAdvancedEventStore.entityName;
         expect(entityName).toStrictEqual("TestEntity");
       });
     });
 
     describe("When I search snapshot for an unknown entity id", () => {
       test("Then it returns undefined", async () => {
-        const snapshot = await testEntityHybridStore.getLastSnapshot("unknown");
+        const snapshot =
+          await testAdvancedEventStore.getLastSnapshot("unknown");
         expect(snapshot).toStrictEqual(undefined);
       });
     });
 
     describe("When I search events for an unknown entity id", () => {
       test("Then it returns undefined", async () => {
-        const events = await testEntityHybridStore.getEventsFromSequenceNumber({
+        const events = await testAdvancedEventStore.getEventsFromOffset({
           entityId: "unknown",
         });
         expect(events).toStrictEqual({
           events: [],
-          lastEventSequenceNumber: 0,
+          lastEventOffset: 0,
         });
       });
     });
 
     describe("When I search snapshot for an unknown entity id", () => {
       test("Then it returns undefined", async () => {
-        const snapshot = await testEntityHybridStore.getSnapshot({
+        const snapshot = await testAdvancedEventStore.getSnapshot({
           entityId: "unknown",
           version: 0,
         });
@@ -52,9 +54,10 @@ describe("Component InMemoryHybridStore", () => {
   });
 
   describe("Given some events and a state to save", () => {
-    const testEntityHybridStore = new InMemoryHybridStore<TestEvent, TestState>(
-      "TestEntity",
-    );
+    const testAdvancedEventStore = new InMemoryAdvancedEventStore<
+      TestEvent,
+      TestState
+    >("TestEntity");
 
     const entityId = "123";
     const eventA = buildTestEvent("EventA");
@@ -69,17 +72,18 @@ describe("Component InMemoryHybridStore", () => {
           stateVersion: 0,
         });
 
-        await testEntityHybridStore.append({
+        await testAdvancedEventStore.appendWithSnapshot({
           entityId,
           events: [eventA, eventB],
           snapshot: stateToSave,
+          appendAfterOffset: 0,
         });
       });
 
       test("Then I can retrieve events from the store", async () => {
-        const result = await testEntityHybridStore.getEventsFromSequenceNumber({
+        const result = await testAdvancedEventStore.getEventsFromOffset({
           entityId,
-          sequenceNumber: 0,
+          offset: 0,
         });
 
         expect(result.events.map((event) => event.name)).toStrictEqual([
@@ -87,11 +91,11 @@ describe("Component InMemoryHybridStore", () => {
           "EventB",
         ]);
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(2);
+        expect(result.lastEventOffset).toStrictEqual(2);
       });
 
       test("Then I can retrieve last snapshot from the store", async () => {
-        const snapshot = await testEntityHybridStore.getLastSnapshot(entityId);
+        const snapshot = await testAdvancedEventStore.getLastSnapshot(entityId);
         expect(snapshot).toStrictEqual({
           state: {
             result: [
@@ -104,7 +108,7 @@ describe("Component InMemoryHybridStore", () => {
       });
 
       test("Then I can retrieve a snapshot by version number", async () => {
-        const snapshot = await testEntityHybridStore.getSnapshot({
+        const snapshot = await testAdvancedEventStore.getSnapshot({
           entityId,
           version: 2,
         });
@@ -121,7 +125,7 @@ describe("Component InMemoryHybridStore", () => {
 
       describe("When I try to search for an unknown version", () => {
         test("Then it returns undefined", async () => {
-          const snapshot = await testEntityHybridStore.getSnapshot({
+          const snapshot = await testAdvancedEventStore.getSnapshot({
             entityId,
             version: 4,
           });
@@ -137,9 +141,10 @@ describe("Component InMemoryHybridStore", () => {
     const eventA = buildTestEvent("EventA");
     const eventB = buildTestEvent("EventB");
     const testEntityReducer = buildTestEntityReducer();
-    const testEntityHybridStore = new InMemoryHybridStore<TestEvent, TestState>(
-      "TestEntity",
-    );
+    const testAdvancedEventStore = new InMemoryAdvancedEventStore<
+      TestEvent,
+      TestState
+    >("TestEntity");
 
     describe("When I save them it succeed", () => {
       test("Then I can retrieve it from the store", async () => {
@@ -149,13 +154,13 @@ describe("Component InMemoryHybridStore", () => {
           stateVersion: 5,
         });
 
-        await testEntityHybridStore.saveSnapshot({
+        await testAdvancedEventStore.saveSnapshot({
           entityId,
           snapshot: stateToSave.state,
           version: stateToSave.version,
         });
 
-        const result = await testEntityHybridStore.getLastSnapshot(entityId);
+        const result = await testAdvancedEventStore.getLastSnapshot(entityId);
         expect(result).toStrictEqual({
           state: {
             result: [
@@ -172,25 +177,26 @@ describe("Component InMemoryHybridStore", () => {
 
   describe("Given a store with an existing snapshot", () => {
     const entityId = "123";
-    const testEntityHybridStore = new InMemoryHybridStore<TestEvent, TestState>(
-      "TestEntity",
-    );
+    const testAdvancedEventStore = new InMemoryAdvancedEventStore<
+      TestEvent,
+      TestState
+    >("TestEntity");
 
     describe("When I save a new snapshot", () => {
       test("Then previous snapshots still exists", async () => {
-        await testEntityHybridStore.saveSnapshot({
+        await testAdvancedEventStore.saveSnapshot({
           entityId,
           snapshot: { result: ["first snapshot"] },
           version: 5,
         });
 
-        await testEntityHybridStore.saveSnapshot({
+        await testAdvancedEventStore.saveSnapshot({
           entityId,
           snapshot: { result: ["Second snapshot with append mode"] },
           version: 6,
         });
 
-        const snapshotVersion5 = await testEntityHybridStore.getSnapshot({
+        const snapshotVersion5 = await testAdvancedEventStore.getSnapshot({
           entityId,
           version: 5,
         });
@@ -200,7 +206,7 @@ describe("Component InMemoryHybridStore", () => {
           version: 5,
         });
 
-        const snapshotVersion6 = await testEntityHybridStore.getSnapshot({
+        const snapshotVersion6 = await testAdvancedEventStore.getSnapshot({
           entityId,
           version: 6,
         });
@@ -218,9 +224,10 @@ describe("Component InMemoryHybridStore", () => {
   describe("Given I registered a handler with onEventAppended", () => {
     describe("When I append events", () => {
       test("Then I my handler is called", async () => {
-        const hybridStore = new InMemoryHybridStore<TestEvent, TestState>(
-          "TestEntity",
-        );
+        const hybridStore = new InMemoryAdvancedEventStore<
+          TestEvent,
+          TestState
+        >("TestEntity");
         const entityId = "1";
 
         let expectedEntityName = "";

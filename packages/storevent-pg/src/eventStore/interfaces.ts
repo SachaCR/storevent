@@ -15,7 +15,7 @@ export interface PGEventStoreConfiguration {
 
 export interface EventFromDB {
   entity_id: string;
-  sequence: string;
+  event_offset: string;
   name: string;
   payload: JsonSerializable;
   appended_at: Date;

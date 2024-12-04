@@ -1,3 +1,4 @@
 export * from "./createEventTable";
 export * from "./appendEvents";
-export * from "./getLastEventSequenceNumber";
+export * from "./getLastEventOffset";
+export * from "./getEventsFromOffset";

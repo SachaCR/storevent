@@ -1,7 +1,9 @@
+import { JsonSerializable } from "@storevent/storevent";
+
 /**
  * Configuration object for the PGHybridStore
  */
-export interface PGHybridStoreConfiguration {
+export interface PGAdvancedEventStoreConfiguration {
   entityName: string;
   eventTableName?: string;
   snapshotTableName?: string;
@@ -14,4 +16,13 @@ export interface PGHybridStoreConfiguration {
     user: string;
     connectionTimeoutMillis?: number;
   };
+}
+
+export interface SnapshotFromDB {
+  entity_id: string;
+  version: string;
+  state: JsonSerializable;
+  is_latest: boolean;
+  created_at: Date;
+  updated_at: Date;
 }

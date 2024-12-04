@@ -27,7 +27,7 @@ describe("Component ConcurrencyError", () => {
 
       test("Then error message match expected values", () => {
         expect(error.message).toStrictEqual(
-          "Concurrency error: Someone else added new events after this offset 56",
+          "Concurrency error: Someone else added new events after this offset number 56",
         );
       });
     });

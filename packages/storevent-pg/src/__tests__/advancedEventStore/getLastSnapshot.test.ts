@@ -1,12 +1,12 @@
 import config from "config";
 
-import { PGError, PGHybridStore } from "../..";
+import { PGError, PGAdvancedEventStore } from "../..";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe("Component PGHybridStore.getSnapshot()", () => {
+describe("Component PGAdvancedEventStore.getLastSnapshot()", () => {
   describe("Given an entity with some snapshots in database", () => {
     const entityId = crypto.randomUUID();
     const stateToSave1 = {
@@ -18,73 +18,66 @@ describe("Component PGHybridStore.getSnapshot()", () => {
     };
 
     beforeAll(async () => {
-      const myPGEventStore = new PGHybridStore({
+      const myPGAdvancedEventStore = new PGAdvancedEventStore({
         entityName: "test_entity",
         database: DATABASE_CONFIG,
       });
 
       try {
-        await myPGEventStore.initTable();
-
-        await myPGEventStore.saveSnapshot({
+        await myPGAdvancedEventStore.saveSnapshot({
           entityId,
           snapshot: stateToSave1,
           version: 1,
         });
 
-        await myPGEventStore.saveSnapshot({
+        await myPGAdvancedEventStore.saveSnapshot({
           entityId,
           snapshot: stateToSave2,
           version: 2,
         });
       } finally {
-        await myPGEventStore.stop();
+        await myPGAdvancedEventStore.pgPool.end();
       }
     });
 
-    describe("When I get snapshot", () => {
+    describe("When I get the last snapshot", () => {
       test("Then it returns the expected snapshot", async () => {
-        const myPGEventStore = new PGHybridStore({
+        const myPGAdvancedEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
 
         try {
-          const result = await myPGEventStore.getSnapshot({
-            entityId,
-            version: 1,
-          });
+          const result = await myPGAdvancedEventStore.getLastSnapshot(entityId);
 
           expect(result).toStrictEqual({
             state: {
-              myState: "my current state 1",
+              myState: "my current state 2",
             },
-            version: 1,
+            version: 2,
           });
         } finally {
-          await myPGEventStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
         }
       });
     });
 
-    describe("When I get last snapshot for an unknown version", () => {
-      const entityId = crypto.randomUUID();
+    describe("When I get last snapshot for an unknown entityId", () => {
+      const unknownEntityId = crypto.randomUUID();
 
       test("Then it returns undefined", async () => {
-        const myPGEventStore = new PGHybridStore({
+        const myPGAdvancedEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
 
         try {
-          const result = await myPGEventStore.getSnapshot({
-            entityId,
-            version: 99,
-          });
+          const result =
+            await myPGAdvancedEventStore.getLastSnapshot(unknownEntityId);
 
           expect(result).toBeUndefined();
         } finally {
-          await myPGEventStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
         }
       });
     });
@@ -93,17 +86,14 @@ describe("Component PGHybridStore.getSnapshot()", () => {
       const invalidEntityId = "just a string";
 
       test("Then it throws a PGError instance with code POSTGRES_ERROR", async () => {
-        const myPGEventStore = new PGHybridStore({
+        const myPGAdvancedEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
         let error;
 
         try {
-          await myPGEventStore.getSnapshot({
-            entityId: invalidEntityId,
-            version: 1,
-          });
+          await myPGAdvancedEventStore.getLastSnapshot(invalidEntityId);
         } catch (err: unknown) {
           if (err instanceof PGError) {
             error = err;
@@ -117,7 +107,7 @@ describe("Component PGHybridStore.getSnapshot()", () => {
             expect(err.cause).toBeInstanceOf(Error);
           }
         } finally {
-          await myPGEventStore.stop();
+          await myPGAdvancedEventStore.pgPool.end();
         }
 
         expect(error).toBeDefined();

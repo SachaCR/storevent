@@ -1,21 +1,21 @@
 import config from "config";
-import { PGEventStore } from "../..";
-import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
+import { PGAdvancedEventStore } from "../..";
+import { PGAdvancedEventStoreConfiguration } from "../../advancedEventStore/interfaces";
 
 const DATABASE_CONFIG =
-  config.get<PGEventStoreConfiguration["database"]>("database");
+  config.get<PGAdvancedEventStoreConfiguration["database"]>("database");
 
-describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
+describe("Component PGAdvancedEventStore.getEventsFromOffset()", () => {
   describe("Given an entity id with some event stored", () => {
     const entityId = crypto.randomUUID();
-    const myPGEventStore = new PGEventStore({
+    const myPGAdvancedEventStore = new PGAdvancedEventStore({
       entityName: "test_entity",
       database: DATABASE_CONFIG,
     });
 
     beforeAll(async () => {
-      await myPGEventStore.initTable();
-      await myPGEventStore.append({
+      await myPGAdvancedEventStore.initTable();
+      await myPGAdvancedEventStore.append({
         entityId,
         events: [
           {
@@ -35,14 +35,14 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
     });
 
     afterAll(async () => {
-      await myPGEventStore.stop();
+      await myPGAdvancedEventStore.pgPool.end();
     });
 
     describe("When I get events from sequence 0", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGAdvancedEventStore.getEventsFromOffset({
           entityId,
-          sequenceNumber: 0,
+          offset: 0,
         });
 
         expect(result.events).toHaveLength(3);
@@ -61,15 +61,15 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
           },
         ]);
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(3);
+        expect(result.lastEventOffset).toStrictEqual(3);
       });
     });
 
     describe("When I get events from sequence 2", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGAdvancedEventStore.getEventsFromOffset({
           entityId,
-          sequenceNumber: 2,
+          offset: 2,
         });
 
         expect(result.events).toHaveLength(1);
@@ -80,20 +80,20 @@ describe("Component PGEventStore.getEventsFromSequenceNumber()", () => {
           },
         ]);
 
-        expect(result.lastEventSequenceNumber).toStrictEqual(3);
+        expect(result.lastEventOffset).toStrictEqual(3);
       });
     });
 
     describe("When I get events from sequence 56", () => {
       test("Then it returns the expected events", async () => {
-        const result = await myPGEventStore.getEventsFromSequenceNumber({
+        const result = await myPGAdvancedEventStore.getEventsFromOffset({
           entityId,
-          sequenceNumber: 56,
+          offset: 56,
         });
 
         expect(result.events).toHaveLength(0);
         expect(result.events).toStrictEqual([]);
-        expect(result.lastEventSequenceNumber).toStrictEqual(3);
+        expect(result.lastEventOffset).toStrictEqual(3);
       });
     });
   });

@@ -1,13 +1,13 @@
 import config from "config";
 import { Client } from "pg";
 
-import { PGError, PGSnapshotStore } from "../..";
+import { PGError, PGAdvancedEventStore } from "../..";
 import { PGEventStoreConfiguration } from "../../eventStore/interfaces";
 
 const DATABASE_CONFIG =
   config.get<PGEventStoreConfiguration["database"]>("database");
 
-describe("Component PGSnapshotStore.saveSnapshot()", () => {
+describe("Component PGAdvancedEventStore.saveSnapshot()", () => {
   describe("Given an entity state", () => {
     const stateToSave = {
       myState: "my current state",
@@ -17,7 +17,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
       test("Then it successfully save the state", async () => {
         const entityId = crypto.randomUUID();
 
-        const myPGEventStore = new PGSnapshotStore({
+        const myPGEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
         });
@@ -52,6 +52,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
           expect(result.rows[0]).toStrictEqual({
             entity_id: entityId,
             version: "1",
+            is_latest: true,
             state: {
               myState: "my current state",
             },
@@ -59,7 +60,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
             updated_at: expect.any(Date) as Date,
           });
         } finally {
-          await myPGEventStore.stop();
+          await myPGEventStore.pgPool.end();
           await client.end();
         }
       });
@@ -71,7 +72,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
       };
 
       describe("And write mode is 'APPEND'", () => {
-        const myPGEventStore = new PGSnapshotStore({
+        const myPGEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
           writeMode: "APPEND",
@@ -117,6 +118,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
             expect(result.rows[0]).toStrictEqual({
               entity_id: entityId,
               version: "1",
+              is_latest: false,
               state: {
                 myState: "preceding state",
               },
@@ -126,6 +128,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
             expect(result.rows[1]).toStrictEqual({
               entity_id: entityId,
               version: "2",
+              is_latest: true,
               state: {
                 myState: "my current state",
               },
@@ -133,14 +136,14 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
               updated_at: expect.any(Date) as Date,
             });
           } finally {
-            await myPGEventStore.stop();
+            await myPGEventStore.pgPool.end();
             await client.end();
           }
         });
       });
 
       describe("And write mode is 'REPLACE'", () => {
-        const myPGEventStore = new PGSnapshotStore({
+        const myPGEventStore = new PGAdvancedEventStore({
           entityName: "test_entity",
           database: DATABASE_CONFIG,
           writeMode: "REPLACE",
@@ -186,6 +189,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
             expect(result.rows[0]).toStrictEqual({
               entity_id: entityId,
               version: "2",
+              is_latest: true,
               state: {
                 myState: "my current state",
               },
@@ -193,7 +197,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
               updated_at: expect.any(Date) as Date,
             });
           } finally {
-            await myPGEventStore.stop();
+            await myPGEventStore.pgPool.end();
             await client.end();
           }
         });
@@ -205,7 +209,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
         myState: "preceding state",
       };
 
-      const myPGEventStore = new PGSnapshotStore({
+      const myPGEventStore = new PGAdvancedEventStore({
         entityName: "test_entity",
         database: DATABASE_CONFIG,
       });
@@ -240,7 +244,7 @@ describe("Component PGSnapshotStore.saveSnapshot()", () => {
             expect(err.cause).toBeInstanceOf(Error);
           }
         } finally {
-          await myPGEventStore.stop();
+          await myPGEventStore.pgPool.end();
         }
 
         expect(error).toBeDefined();

@@ -8,11 +8,11 @@ export async function createEventTable(
   const rawRequest = `
   CREATE TABLE IF NOT EXISTS %I (
     entity_id UUID NOT NULL,
-    sequence BIGINT NOT NULL,
+    event_offset BIGINT NOT NULL,
     name TEXT NOT NULL,
     payload JSON NOT NULL,
     appended_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY(entity_id, sequence)
+    PRIMARY KEY(entity_id, event_offset)
   )
   `;
 
