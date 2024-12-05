@@ -2,7 +2,7 @@
 
 In memory implementation of `@storevent/storevent` interfaces
 
-It provides an event store, a snapshot store and hybrid store implementation.
+It provides an event store, and advanced event store implementation.
 
 Documentation in progress...
 

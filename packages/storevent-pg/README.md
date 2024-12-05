@@ -2,7 +2,7 @@
 
 Postgres implementation of `@storevent/storevent` interfaces
 
-It provides an event store, a snapshot store and hybrid store implementation.
+It provides an event store, a snapshot store and advanced event store implementation.
 
 `WARNING`: This package is still under active development use it at your own risks. This warning will be removed with v1.0.0 publication where the package wille be considered stable
 

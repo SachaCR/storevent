@@ -19,19 +19,7 @@ See [@storevent/storevent](https://www.npmjs.com/package/@storevent/storevent)
 
 Todo list:
 
-IN PROGRESS:
 - [ ] Provide better documentation and tutorials
-
-DONE:
-- [x] Differentiate tags by packages to avoid conflicts.
-- [x] Finish postgres implementation testing.
-- [x] Debug PGHybridStore tests to understand why they blocks the CI.
-- [x] Implement a writeMode option (APPEND or COMPACT) on snapshot store
-- [x] Publish storevent package
-- [x] Publish storevent-pg package
-- [x] Publish storevent-memory package
-
-BACKLOG:
 - [ ] Remove test files from build with a separate tsconfig.
 - [ ] Start implementing for Mongo DB
 
