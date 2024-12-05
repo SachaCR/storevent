@@ -33,25 +33,26 @@ Example shows:
 
 # Event
 
-To create your events you just need to extends the `Storevent` interface.
+To create your events you just need to extends the `BasicEvent` interface.
 
 ```typescript
-import { Storevent } from "@storevent/storevent";
+import { BasicEvent } from "@storevent/storevent";
 
 type AccountEvent = AccountCreated | AccountCredited | AccountDebited;
 
-interface AccountCreated extends Storevent {
+interface AccountCreated extends BasicEvent {
   name: "AccountCreated";
   payload: {
     accountId: string;
+    holderName: string;
     status: "OPEN";
     balance: number;
     currency: string;
   };
 }
 
-interface AccountCredited extends Storevent { ... }
-interface AccountDebited extends Storevent { ... }
+interface AccountCredited extends BasicEvent { ... }
+interface AccountDebited extends BasicEvent { ... }
 ```
 
 # Entity State
@@ -63,7 +64,8 @@ import { JsonSerializable } from "@storevent/storevent";
 
 interface AccountState extends JsonSerializable {
   accountId: string;
-  status: "VOID" | "OPEN";
+  holderName: string;
+  status: "CLOSED" | "OPEN";
   balance: number;
   currency: string;
 }
@@ -96,6 +98,7 @@ function applyAccountCreditedEvent(params: {
   const { state, event } = params;
 
   return {
+    holderName: state.holderName,
     accountId: state.accountId,
     balance: state.balance + event.payload.amount,
     currency: state.currency,
@@ -108,7 +111,7 @@ function applyAccountDebitedEvent() { ... }
 function applyAccountCreatedEvent() { ... }
 ```
 
-## Reducer usage
+## Reducer Usage
 
 ```typescript
 const initialState = { ... }
@@ -122,7 +125,7 @@ const newState = new AccountReducer().reduceEvents({
 });
 ```
 
-# Event Store interface
+# Event Store Interface
 
 The event store interface provides an interface to append new events in your event store and a method to retrieve your events. You can also subscribe to notifications to trigger a callback when new events are appended to the store.
 
@@ -136,14 +139,14 @@ await accountEventStore.append({
 });
 
 // Retrieve all events
-const events = await accountEventStore.getEventsFromSequenceNumber({
+const events = await accountEventStore.getEventsFromOffset({
   entityId: accountId,
 });
 
-// Retrieve event from a given sequence
-const events = await accountEventStore.getEventsFromSequenceNumber({
+// Retrieve event from a given offset
+const events = await accountEventStore.getEventsFromOffset({
   entityId: accountId,
-  sequenceNumber: 45, // optional default to 0
+  offset: 45, // optional default to 0
 });
 
 // Register a listener to be notified when new events are appended.
@@ -154,33 +157,9 @@ accountEventStore.onEventAppended((notification) => {
 });
 ```
 
-# Snapshot Store interface
+# Advanced Event Store Interface
 
-The `SnapshotStore` interface provides methods to help you save your entity state for a given version.
-
-```typescript
-// Saving a snapshot
-await accountSnapshotStore.saveSnapshot({
-  entityId: '123',
-  snapshot: {status: 'My entity state'},
-  version: 234, // this indicate that this state is the one we obtain after applying event wih sequence 234
-});
-
-// Retrieving the last snapshot for an entity
-const snapshot = await accountSnapshotStore.getLastSnapshot(accountId);
-
-// REtrieving a specific snapshot version if it exists.
-const snapshotVersion = await accountSnapshotStore.getSnapshot({
-  entityId: accountId,
-  version: 234,
-});
-```
-
-You can check this for more details [Account Example Here](https://github.com/SachaCR/storevent/tree/main/packages/examples)
-
-# Hybrid Store interface
-
-The `HybridStore` interface is here to allow saving your entity events and also persist a snapshot in a transactionnal way. It provide the same methods as `EventStore` and `SnapshotStore`. The only difference is the `append` method signature that can take a snaphost and an array of events.
+The `AdvanceEventStore` interface is here to allow saving your entity events and also persist a snapshot in a transactionnal way. It provide the same methods as `EventStore`. The only difference is the `appendWithSnapshot` method that take a snaphost and an array of events.
 
 ```typescript
 const snapshotToSave = {
@@ -188,14 +167,15 @@ const snapshotToSave = {
   version: 349
 }
 
-await myHybridStore.append({
+await myAdvanceEventStore.appendWithSnapshot({
   entityId,
   events: [eventA, eventB],
   snapshot: snapshotToSave,
+  appendAfterOffset: 347
 });
 
 // Register a listener to be notified when new events are appended.
-myHybridStore.onEventAppended((notification) => {
+myAdvanceEventStore.onEventAppended((notification) => {
   notification.entityName;
   notification.entityId;
   notification.events;
@@ -235,7 +215,7 @@ A `StoreventError` has the following properties:
 
 ## Specific errors
 - `ConcurrencyError`: Use this error in your implementation to prevent events from being appended concurrently for the same entity.
-- `WrongSequenceError`: Use this error in your implementation when you detect inconsistency in your event sequence.
+- `WrongOffsetError`: Use this error in your implementation when you detect inconsistency in your event offset.
 - `UnknownReducerError`: This error is thrown when an `EntityReducer` cannot find a reducer for a given event name.
 
 
