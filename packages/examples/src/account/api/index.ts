@@ -71,22 +71,32 @@ fastify.post<{
 }>("/accounts/:accountId/:action", async function handler(request, reply) {
   const { accountId } = request.params;
 
+  let stateVersion = 0;
+  let state = Account.initialState();
+
   const snapshot = await eventStore.getLastSnapshot(accountId);
 
-  if (!snapshot) {
-    await reply.code(404).send({ error: "Account not found" });
-    return;
+  if (snapshot) {
+    stateVersion = snapshot.version;
+    state = snapshot.state;
   }
 
   const result = await eventStore.getEventsFromOffset({
     entityId: accountId,
-    offset: snapshot.version,
+    offset: stateVersion,
   });
 
+  const { events, lastEventOffset } = result;
+
+  if (!snapshot && events.length === 0) {
+    await reply.code(404).send({ error: "Account not found" });
+    return;
+  }
+
   const currentState = new AccountReducer().reduceEvents({
-    state: snapshot.state,
-    stateVersion: snapshot.version,
-    events: result.events,
+    state,
+    stateVersion,
+    events,
   });
 
   const account = new Account({
@@ -121,7 +131,7 @@ fastify.post<{
       state: account.getState(),
       version: account.getVersion(),
     },
-    appendAfterOffset: snapshot.version,
+    appendAfterOffset: lastEventOffset,
   });
 
   return account.getState();
@@ -132,22 +142,30 @@ fastify.get<{
 }>("/accounts/:accountId", async function handler(request, reply) {
   const { accountId } = request.params;
 
-  const snapshot = await eventStore.getLastSnapshot(accountId);
+  let stateVersion = 0;
+  let state = Account.initialState();
 
-  if (!snapshot) {
-    await reply.code(404).send({ error: "Account not found" });
-    return;
+  const snapshot = await eventStore.getLastSnapshot(accountId);
+  if (snapshot) {
+    stateVersion = snapshot.version;
+    state = snapshot.state;
   }
 
   const result = await eventStore.getEventsFromOffset({
     entityId: accountId,
-    offset: snapshot.version,
+    offset: stateVersion,
   });
+  const events = result.events;
+
+  if (!snapshot && events.length === 0) {
+    await reply.code(404).send({ error: "Account not found" });
+    return;
+  }
 
   const currentState = new AccountReducer().reduceEvents({
-    state: snapshot.state,
-    stateVersion: snapshot.version,
-    events: result.events,
+    state,
+    stateVersion,
+    events,
   });
 
   return currentState.state;
